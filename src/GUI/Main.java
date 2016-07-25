@@ -1,12 +1,11 @@
 package GUI;
 
-import com.sun.prism.paint.Color;
-
 import Hardware.Screen;
 import Libraries.MenusLib;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
-import javafx.geometry.Orientation;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -44,6 +43,18 @@ public class Main extends Application {
 			System.out.println("Selected Color " + menu.cpikcer.getValue().toString());
 			scene.setCursor(Cursor.HAND);
 		});
+		menu.gHLineB.setOnAction(e -> {
+			System.out.println("Tabs " + tabPane.getTabs());
+			tabPane.getSelectionModel().getSelectedItem().getContent().setStyle("-fx-background-color:blue;");
+			
+		});
+		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>(){
+			@Override
+			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
+				System.out.println("Selected Tabs Index : " + tabPane.getSelectionModel().getSelectedIndex());
+				
+			}
+		});
 	}
 
 	public void initState() {
@@ -56,6 +67,7 @@ public class Main extends Application {
 		tabPane.setMinWidth(screen.getWidth());
 		container.setTop(head);
 		ScrollPane sp = new ScrollPane();
+		sp.setPrefWidth(screen.getWidth() - 20);
 		sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		sp.setContent(tabPane);
 		container.setCenter(sp);
@@ -67,20 +79,27 @@ public class Main extends Application {
 
 	public void addNewTab() {
 		Tab tab = new Tab();
-		BorderPane ws = new BorderPane();
+		
+		
+		BorderPane ws = new BorderPane(); // Container
+		Draw area = new Draw(); // Draw
+		VBox hb = new VBox(); // Tools
+		ws.setLeft(area);
+		ws.setRight(hb);
+
+		hb.getChildren().add(new Button("Tool"));
+
 		ws.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent e) {
 				scene.setCursor(Cursor.DEFAULT);
 			}
 		});
-		
-		ws.maxWidth(screen.getWidth());
-		ws.setMinHeight(800);
-		ws.setStyle("-fx-background-color:white;" + "-fx-border-style: solid inside;" + "-fx-border-width: 2;"
-				+ "-fx-border-insets: 5;" + "-fx-border-radius: 5;" + "-fx-border-color: blue;");
-		tab.setContent(ws);
+
+		tab.setContent(area);
+		tab.setText("" + System.currentTimeMillis());
 		tabPane.getTabs().add(tab);
+		tabPane.setMaxWidth(screen.getWidth() - 500);
 	}
 
 }

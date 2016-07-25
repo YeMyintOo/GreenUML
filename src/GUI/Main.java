@@ -81,20 +81,15 @@ public class Main extends Application {
 		Tab tab = new Tab();
 		
 		
-		BorderPane ws = new BorderPane(); // Container
-		Draw area = new Draw(); // Draw
-		VBox hb = new VBox(); // Tools
-		ws.setLeft(area);
-		ws.setRight(hb);
+	//	BorderPane ws = new BorderPane(); // Container
+		Draw area = new Draw(scene); // Draw
+	//	VBox hb = new VBox(); // Tools
+	//	ws.setLeft(area);
+	//	ws.setRight(hb);
 
-		hb.getChildren().add(new Button("Tool"));
+	//	hb.getChildren().add(new Button("Tool"));
 
-		ws.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent e) {
-				scene.setCursor(Cursor.DEFAULT);
-			}
-		});
+		
 
 		tab.setContent(area);
 		tab.setText("" + System.currentTimeMillis());

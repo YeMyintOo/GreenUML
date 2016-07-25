@@ -2,6 +2,7 @@ package Libraries;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -32,6 +33,7 @@ public class MenusLib {
 	public Button printB;
 	public Button pointB;
 	public Button cpointB;
+	public ColorPicker cpikcer;
 	public Button handB;
 	public Button gHLineB; // Horizontal
 	public Button gVLineB; // Vertical
@@ -68,6 +70,7 @@ public class MenusLib {
 		sbar.setSpacing(10);
 		pointB = new Button("Pointer");
 		cpointB = new Button("Color Pointer");
+		cpikcer=new ColorPicker();		
 		handB = new Button("Hand");
 		saveB = new Button("Save");
 		printB = new Button("Print");
@@ -75,6 +78,6 @@ public class MenusLib {
 		gVLineB = new Button("GuideLine (Vertical)");
 		gBLineB = new Button("GridLine");
 		rSelectB = new Button("Region Select");
-		sbar.getChildren().addAll(pointB, handB, saveB, printB, gHLineB, gVLineB, gBLineB, rSelectB);
+		sbar.getChildren().addAll(pointB,cpointB,cpikcer, handB, saveB, printB, gHLineB, gVLineB, gBLineB, rSelectB);
 	}
 }

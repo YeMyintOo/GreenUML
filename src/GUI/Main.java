@@ -87,7 +87,7 @@ public class Main extends Application {
 	//	ws.setLeft(area);
 	//	ws.setRight(hb);
 
-	//	hb.getChildren().add(new Button("Tool"));
+
 
 		
 

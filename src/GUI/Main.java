@@ -55,18 +55,22 @@ public class Main extends Application {
 			@Override
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
 				System.out.println("Selected Tabs Index : " + tabPane.getSelectionModel().getSelectedIndex());
-				Draw draw=(Draw)tabPane.getSelectionModel().getSelectedItem().getContent();
+				Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
 				draw.getArea().addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent e) {
-						//scene.setCursor(Cursor.DEFAULT);
-						draw.getArea().setStyle("-fx-background-color:green;");
-						//System.out.println("Selected Tool is : "+ draw.getCTool());
+						// scene.setCursor(Cursor.DEFAULT);
+						//draw.getArea().setStyle("-fx-background-color:green;");
+						System.out.println("Selected Tool is : " + draw.getCTool());
+						if (draw.getCTool().equals("1")) {
+							Sample1 sample=new Sample1(e.getX(),e.getY());
+							draw.getArea().getChildren().add(sample);
+						}
 					}
 				});
 			}
 		});
-		
+
 	}
 
 	public void initState() {

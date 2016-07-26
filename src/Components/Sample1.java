@@ -6,5 +6,8 @@ public class Sample1 extends General{
 	//Rectangle
 	public Sample1(double x,double y){
 		super(x,y);
+		setWidth(300);
+		setHeight(200);
+
 	}
 }

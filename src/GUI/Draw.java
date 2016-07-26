@@ -17,7 +17,7 @@ public class Draw extends BorderPane {
 	private VBox tool; // Tool Bar
 
 	public Draw(Scene scene) {
-		ctool="1"; //Default Value;
+		ctool="0"; //Default Value;
 		area = new Pane();
 		tool = new VBox();
 		screen = new Screen();

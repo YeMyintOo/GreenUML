@@ -1,5 +1,6 @@
 package GUI;
 
+import Components.Sample1;
 import Hardware.Screen;
 import Libraries.MenusLib;
 import javafx.application.Application;
@@ -15,6 +16,7 @@ import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -24,6 +26,7 @@ public class Main extends Application {
 	VBox head;
 	MenusLib menu;
 	TabPane tabPane;
+	Draw draw;
 
 	@Override
 	public void start(Stage stage) throws Exception {
@@ -46,15 +49,24 @@ public class Main extends Application {
 		menu.gHLineB.setOnAction(e -> {
 			System.out.println("Tabs " + tabPane.getTabs());
 			tabPane.getSelectionModel().getSelectedItem().getContent().setStyle("-fx-background-color:blue;");
-			
+
 		});
-		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>(){
+		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
 				System.out.println("Selected Tabs Index : " + tabPane.getSelectionModel().getSelectedIndex());
-				
+				Draw draw=(Draw)tabPane.getSelectionModel().getSelectedItem().getContent();
+				draw.getArea().addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent e) {
+						//scene.setCursor(Cursor.DEFAULT);
+						draw.getArea().setStyle("-fx-background-color:green;");
+						//System.out.println("Selected Tool is : "+ draw.getCTool());
+					}
+				});
 			}
 		});
+		
 	}
 
 	public void initState() {
@@ -79,19 +91,8 @@ public class Main extends Application {
 
 	public void addNewTab() {
 		Tab tab = new Tab();
-		
-		
-	//	BorderPane ws = new BorderPane(); // Container
-		Draw area = new Draw(scene); // Draw
-	//	VBox hb = new VBox(); // Tools
-	//	ws.setLeft(area);
-	//	ws.setRight(hb);
-
-
-
-		
-
-		tab.setContent(area);
+		draw = new Draw(scene);
+		tab.setContent(draw);
 		tab.setText("" + System.currentTimeMillis());
 		tabPane.getTabs().add(tab);
 		tabPane.setMaxWidth(screen.getWidth() - 500);

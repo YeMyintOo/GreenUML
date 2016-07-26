@@ -11,12 +11,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 public class Draw extends BorderPane {
-	public String ctool; // Current Selected Tool Item
+	private String ctool; // Current Selected Tool Item
 	Screen screen;
-	Pane area; // Draw
-	VBox tool; // Tool Bar
+	private Pane area; // Draw
+	private VBox tool; // Tool Bar
 
 	public Draw(Scene scene) {
+		ctool="1"; //Default Value;
 		area = new Pane();
 		tool = new VBox();
 		screen = new Screen();
@@ -26,18 +27,12 @@ public class Draw extends BorderPane {
 
 		setPrefHeight(screen.getHeight() - 140);
 		setMaxHeight(screen.getHeight() - 140);
-		setPrefWidth(400);
-		setMaxWidth(400);
+		setPrefWidth(screen.getWidth());
+		setMaxWidth(screen.getWidth());
 		setStyle("-fx-background-color:white;" + "-fx-border-style: solid inside;" + "-fx-border-width: 2;"
 				+ "-fx-border-insets: 5;" + "-fx-border-radius: 5;" + "-fx-border-color: blue;");
 
-		area.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-			@Override
-			public void handle(MouseEvent e) {
-				scene.setCursor(Cursor.DEFAULT);
-				System.out.println("Selected Tool is : "+ ctool);
-			}
-		});
+		
 
 		Button b1 = new Button("1");
 		Button b2 = new Button("2");
@@ -53,5 +48,11 @@ public class Draw extends BorderPane {
 		b3.setOnAction(e -> {
 			ctool=b3.getText();
 		});
+	}
+	public String getCTool(){
+		return ctool;
+	}
+	public Pane getArea(){
+		return area;
 	}
 }

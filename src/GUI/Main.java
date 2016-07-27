@@ -1,7 +1,7 @@
 package GUI;
 
-
 import Boxs.BNewDiagram;
+import Boxs.BNewProject;
 import Components.Sample1;
 import Hardware.Screen;
 import Libraries.MenusLib;
@@ -87,24 +87,35 @@ public class Main extends Application {
 				});
 			}
 		});
-			
-		
-		//Menus Function////////////
+
+		// Menus Function////////////
 		menu.nFile.setOnAction(e -> {
 			BNewDiagram box = new BNewDiagram(stage);
 			box.sizeToScene();
 			container.setDisable(true);
 			box.setAlwaysOnTop(true);
-			box.showAndWait(); 
+			box.showAndWait();
 			if (box.getValue().equals("finish")) {
-				container.setCenter(tabPane); 
+				container.setCenter(tabPane);
 				addNewTab(box.getFileName(), box.getType(), box.getPath());
 			}
 			container.setDisable(false);
 		});
+		menu.nProject.setOnAction(e -> {
+			BNewProject box = new BNewProject(stage);
+			box.sizeToScene();
+			container.setDisable(true);
+			box.setAlwaysOnTop(true);
+			box.showAndWait();
+			if (box.getValue().equals("finish")) {
+				//container.setCenter(tabPane);
+				//addNewTab(box.getFileName(), box.getType(), box.getPath());
+			}
+			container.setDisable(false);
+		});
+
+		/////////////////////////////.
 		
-		
-		/////////////////////////////
 	}
 
 	public void initState() {
@@ -127,9 +138,9 @@ public class Main extends Application {
 		Application.launch(args);
 	}
 
-	public void addNewTab(String name,int diagram,String path) {
+	public void addNewTab(String name, int diagram, String path) {
 		Tab tab = new Tab();
-		draw = new Draw(scene);
+		draw = new Draw(scene,diagram);
 		tab.setContent(draw);
 		tab.setText(name);
 		tabPane.getTabs().add(tab);

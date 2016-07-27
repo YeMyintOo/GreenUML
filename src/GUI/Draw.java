@@ -1,23 +1,30 @@
 package GUI;
 
 import Hardware.Screen;
-import javafx.event.EventHandler;
-import javafx.scene.Cursor;
+import Libraries.Tool;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 public class Draw extends BorderPane {
-	private String ctool; // Current Selected Tool Item
+	private Tool ctool; // Current Selected Tool Item
 	Screen screen;
 	private Pane area; // Draw
 	private VBox tool; // Tool Bar
 
-	public Draw(Scene scene) {
-		ctool="0"; //Default Value;
+	// Use Case////////
+	public Button ucprocess; // Process
+	public Button ucactor; // Actor
+	public Button ucrealation; // Relation
+	public Button ucgeneral; // General
+	public Button ucboundary; // Boundary
+	//////////////////
+
+	public Draw(Scene scene, int diagram) {
+		ctool = Tool.POINTER;
 		area = new Pane();
 		tool = new VBox();
 		screen = new Screen();
@@ -25,34 +32,50 @@ public class Draw extends BorderPane {
 		setCenter(area);
 		setRight(tool);
 
-		setPrefHeight(screen.getHeight() - 140);
-		setMaxHeight(screen.getHeight() - 140);
+		tool.setStyle("-fx-border-style: solid inside;" + "-fx-border-width: 2;" + "-fx-border-insets: 5;"
+				+ "-fx-border-radius: 5;");
 		setPrefWidth(screen.getWidth());
 		setMaxWidth(screen.getWidth());
-		setStyle("-fx-background-color:white;" + "-fx-border-style: solid inside;" + "-fx-border-width: 2;"
-				+ "-fx-border-insets: 5;" + "-fx-border-radius: 5;" + "-fx-border-color: blue;");
+		setStyle("-fx-background-color:white;");
 
-		
+		initLoadUC();
+	}
 
-		Button b1 = new Button("1");
-		Button b2 = new Button("2");
-		Button b3 = new Button("3");
-		tool.getChildren().addAll(b1, b2, b3);
+	// Initial Tool Loading...
+	public void initLoadUC() {
+		ucprocess = new Button("P");
+		Tooltip ucp = new Tooltip("Process");
+		Tooltip.install(ucprocess, ucp);
 
-		b1.setOnAction(e -> {
-			ctool=b1.getText();
+		ucactor = new Button("A");
+		ucrealation = new Button("R");
+		ucgeneral = new Button("G");
+		ucboundary = new Button("B");
+		tool.getChildren().addAll(ucprocess, ucactor, ucrealation, ucgeneral, ucboundary);
+
+		ucprocess.setOnAction(e -> {
+			ctool = Tool.UCPROCESS;
 		});
-		b2.setOnAction(e -> {
-			ctool=b2.getText();
+		ucactor.setOnAction(e -> {
+			ctool = Tool.UCACTOR;
 		});
-		b3.setOnAction(e -> {
-			ctool=b3.getText();
+		ucrealation.setOnAction(e -> {
+			ctool = Tool.UCREALATION;
+		});
+		ucgeneral.setOnAction(e -> {
+			ctool = Tool.UCGENERAL;
+		});
+		ucboundary.setOnAction(e -> {
+			ctool = Tool.UCBOUNDARY;
 		});
 	}
-	public String getCTool(){
+	//
+
+	public Tool getCTool() {
 		return ctool;
 	}
-	public Pane getArea(){
+
+	public Pane getArea() {
 		return area;
 	}
 }

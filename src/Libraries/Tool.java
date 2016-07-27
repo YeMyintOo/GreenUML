@@ -1,0 +1,6 @@
+package Libraries;
+
+public enum Tool {
+	POINTER,
+	UCPROCESS, UCACTOR, UCREALATION, UCGENERAL, UCBOUNDARY;
+}

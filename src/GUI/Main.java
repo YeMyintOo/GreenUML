@@ -1,5 +1,7 @@
 package GUI;
 
+
+import Boxs.BNewDiagram;
 import Components.Sample1;
 import Hardware.Screen;
 import Libraries.MenusLib;
@@ -9,7 +11,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -39,9 +40,6 @@ public class Main extends Application {
 		stage.centerOnScreen();
 		stage.show();
 
-		menu.handB.setOnAction(e -> {
-			addNewTab();
-		});
 		menu.cpointB.setOnAction(e -> {
 			System.out.println("Selected Color " + menu.cpikcer.getValue().toString());
 			scene.setCursor(Cursor.HAND);
@@ -56,21 +54,57 @@ public class Main extends Application {
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
 				System.out.println("Selected Tabs Index : " + tabPane.getSelectionModel().getSelectedIndex());
 				Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
-				draw.getArea().addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+
+				draw.getArea().addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent e) {
-						// scene.setCursor(Cursor.DEFAULT);
-						//draw.getArea().setStyle("-fx-background-color:green;");
-						System.out.println("Selected Tool is : " + draw.getCTool());
-						if (draw.getCTool().equals("1")) {
-							Sample1 sample=new Sample1(e.getX(),e.getY());
-							draw.getArea().getChildren().add(sample);
+						Object obj = e.getTarget();
+						if (obj instanceof Sample1 && scene.getCursor() == Cursor.HAND) {
+							Sample1 sample = (Sample1) obj;
+							Color color = Color.web(menu.cpikcer.getValue().toString());
+							sample.setFill(color);
+
+						} else if (obj instanceof Sample1) {
+
+						} else if (draw.getCTool().equals("1")) {
+							Sample1 sample = new Sample1(e.getX(), e.getY());
+							draw.getArea().getChildren().addAll(sample);
+						}
+						scene.setCursor(Cursor.DEFAULT);
+					}
+				});
+
+				draw.getArea().addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent e) {
+						Object obj = e.getTarget();
+						if (obj instanceof Sample1) {
+							Sample1 sample = (Sample1) obj;
+							sample.setX(e.getX());
+							sample.setY(e.getY());
 						}
 					}
 				});
 			}
 		});
-
+			
+		
+		//Menus Function////////////
+		menu.nFile.setOnAction(e -> {
+			BNewDiagram box = new BNewDiagram(stage);
+			box.sizeToScene();
+			container.setDisable(true);
+			box.setAlwaysOnTop(true);
+			box.showAndWait(); 
+			if (box.getValue().equals("finish")) {
+				container.setCenter(tabPane); 
+				addNewTab(box.getFileName(), box.getType(), box.getPath());
+			}
+			container.setDisable(false);
+		});
+		
+		
+		/////////////////////////////
 	}
 
 	public void initState() {
@@ -93,11 +127,11 @@ public class Main extends Application {
 		Application.launch(args);
 	}
 
-	public void addNewTab() {
+	public void addNewTab(String name,int diagram,String path) {
 		Tab tab = new Tab();
 		draw = new Draw(scene);
 		tab.setContent(draw);
-		tab.setText("" + System.currentTimeMillis());
+		tab.setText(name);
 		tabPane.getTabs().add(tab);
 		tabPane.setMaxWidth(screen.getWidth() - 500);
 	}

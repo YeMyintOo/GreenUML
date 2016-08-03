@@ -10,7 +10,7 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 
 public class Draw extends BorderPane {
-	private Tool ctool; // Current Selected Tool Item
+	public Tool ctool; // Current Selected Tool Item
 	Screen screen;
 	private Pane area; // Draw
 	private VBox tool; // Tool Bar

@@ -16,14 +16,14 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-public class Process extends Ellipse {
+public class UCProcess extends Ellipse {
 	// Cycle
 	private StringProperty data;
 	private Text label;
 	private TextField text;
 	private DropShadow shape;
 
-	public Process(double centerX, double centerY, Color color) {
+	public UCProcess(double centerX, double centerY, Color color) {
 		super(centerX, centerY, 100, 60);
 		setFill(color);
 		setStroke(Color.GRAY);

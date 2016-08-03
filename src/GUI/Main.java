@@ -4,7 +4,8 @@ import Boxs.BNewDiagram;
 import Boxs.BNewProject;
 import Components.Sample1;
 import Hardware.Screen;
-import Libraries.MenusLib;
+import Libraries.*;
+import UseCase.*;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -52,24 +53,29 @@ public class Main extends Application {
 		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
-				System.out.println("Selected Tabs Index : " + tabPane.getSelectionModel().getSelectedIndex());
 				Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
 
 				draw.getArea().addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent e) {
 						Object obj = e.getTarget();
-						if (obj instanceof Sample1 && scene.getCursor() == Cursor.HAND) {
-							Sample1 sample = (Sample1) obj;
-							Color color = Color.web(menu.cpikcer.getValue().toString());
-							sample.setFill(color);
-
-						} else if (obj instanceof Sample1) {
-
-						} else if (draw.getCTool().equals("1")) {
-							Sample1 sample = new Sample1(e.getX(), e.getY());
-							draw.getArea().getChildren().addAll(sample);
+						Color color=Color.web(menu.cpikcer.getValue().toString());
+						// New Draw
+						if (obj instanceof Draw) {
+							switch(draw.ctool){
+							case UCPROCESS: 
+								UCProcess process=new UCProcess(e.getX(),e.getY(),color);
+								draw.getArea().getChildren().addAll(process);
+								break;
+							}
 						}
+
+						// Use Case
+						if (obj instanceof UCProcess && scene.getCursor() == Cursor.HAND) {
+							UCProcess ucprocess = (UCProcess) obj;
+							ucprocess.setFill(color);
+						}
+
 						scene.setCursor(Cursor.DEFAULT);
 					}
 				});
@@ -108,14 +114,14 @@ public class Main extends Application {
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
 			if (box.getValue().equals("finish")) {
-				//container.setCenter(tabPane);
-				//addNewTab(box.getFileName(), box.getType(), box.getPath());
+				// container.setCenter(tabPane);
+				// addNewTab(box.getFileName(), box.getType(), box.getPath());
 			}
 			container.setDisable(false);
 		});
 
-		/////////////////////////////.
-		
+		///////////////////////////// .
+
 	}
 
 	public void initState() {
@@ -140,7 +146,7 @@ public class Main extends Application {
 
 	public void addNewTab(String name, int diagram, String path) {
 		Tab tab = new Tab();
-		draw = new Draw(scene,diagram);
+		draw = new Draw(scene, diagram);
 		tab.setContent(draw);
 		tab.setText(name);
 		tabPane.getTabs().add(tab);

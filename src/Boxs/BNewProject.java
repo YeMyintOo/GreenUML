@@ -15,6 +15,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+
 public class BNewProject extends Stage {
 
 	// New Project Box

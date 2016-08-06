@@ -15,12 +15,16 @@ public class Draw extends BorderPane {
 	private Pane area; // Draw
 	private VBox tool; // Tool Bar
 
+	public Button glabel;// General Label;
+
 	// Use Case////////
 	public Button ucprocess; // Process
 	public Button ucactor; // Actor
 	public Button ucrealation; // Relation
 	public Button ucgeneral; // General
 	public Button ucboundary; // Boundary
+	public Button ucinclude; // Include
+	public Button ucextend; // Include
 	//////////////////
 
 	public Draw(Scene scene, int diagram) {
@@ -38,7 +42,14 @@ public class Draw extends BorderPane {
 		setMaxWidth(screen.getWidth());
 		setStyle("-fx-background-color:white;");
 
+		glabel = new Button("G");
+
 		initLoadUC();
+		tool.getChildren().addAll(glabel);
+
+		glabel.setOnAction(e -> {
+			ctool = Tool.GLabel;
+		});
 	}
 
 	// Initial Tool Loading...
@@ -51,7 +62,10 @@ public class Draw extends BorderPane {
 		ucrealation = new Button("R");
 		ucgeneral = new Button("G");
 		ucboundary = new Button("B");
-		tool.getChildren().addAll(ucprocess, ucactor, ucrealation, ucgeneral, ucboundary);
+		ucinclude = new Button("I");
+		ucextend = new Button("E");
+
+		tool.getChildren().addAll(ucprocess, ucactor, ucrealation, ucgeneral, ucboundary, ucinclude, ucextend);
 
 		ucprocess.setOnAction(e -> {
 			ctool = Tool.UCPROCESS;
@@ -68,6 +82,12 @@ public class Draw extends BorderPane {
 		ucboundary.setOnAction(e -> {
 			ctool = Tool.UCBOUNDARY;
 		});
+		ucinclude.setOnAction(e -> {
+			ctool = Tool.UCINCLUDE;
+		});
+		ucextend.setOnAction(e -> {
+			ctool = Tool.UCEXTEND;
+		});
 	}
 	//
 
@@ -77,5 +97,9 @@ public class Draw extends BorderPane {
 
 	public Pane getArea() {
 		return area;
+	}
+
+	public void setCTool(Tool tool) {
+		ctool = tool;
 	}
 }

@@ -1,11 +1,13 @@
 package Libraries;
 
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 public class MenusLib {
@@ -37,8 +39,20 @@ public class MenusLib {
 	public Button handB;
 	public Button gHLineB; // Horizontal
 	public Button gVLineB; // Vertical
-	public Button gBLineB; // Background;
+
 	public Button rSelectB;// Region Select;
+
+	public Button gBLineB; // Background
+	public boolean isgBLine;
+	public BorderPane gridPane;
+	
+	public Fonts Fonts;
+	
+	//UseCase
+	public boolean isUCRelation;
+	public boolean isUCGeneral;
+	public boolean isUCInclude;
+	public boolean isUCExtend;
 
 	public MenusLib() {
 		bar = new MenuBar();
@@ -70,7 +84,7 @@ public class MenusLib {
 		sbar.setSpacing(10);
 		pointB = new Button("Pointer");
 		cpointB = new Button("Color Pointer");
-		cpikcer=new ColorPicker();		
+		cpikcer = new ColorPicker();
 		handB = new Button("Hand");
 		saveB = new Button("Save");
 		printB = new Button("Print");
@@ -78,6 +92,28 @@ public class MenusLib {
 		gVLineB = new Button("GuideLine (Vertical)");
 		gBLineB = new Button("GridLine");
 		rSelectB = new Button("Region Select");
-		sbar.getChildren().addAll(pointB,cpointB,cpikcer, handB, saveB, printB, gHLineB, gVLineB, gBLineB, rSelectB);
+		sbar.getChildren().addAll(pointB, cpointB, cpikcer, handB, saveB, printB, gHLineB, gVLineB, gBLineB, rSelectB);
+		
+		Fonts=new Fonts();
+		
+		isgBLine=true;
+		gridPane=new BorderPane();
+		setGridLine();
+	}
+
+	public void setGridLine() {
+		int i = 10;
+		while (i < 800) {
+			GridLines l = new GridLines(10, i, 1340, i);
+			gridPane.getChildren().add(l);
+			i = i + 20;
+		}
+		int k = 10;
+		while (k < 1340) {
+			GridLines l = new GridLines(k, 10, k, 690);
+			gridPane.getChildren().add(l);
+			k = k + 20;
+		}
+		
 	}
 }

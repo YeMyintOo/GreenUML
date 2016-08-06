@@ -2,10 +2,17 @@ package GUI;
 
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
-import Components.Sample1;
+import GTool.GLabel;
 import Hardware.Screen;
-import Libraries.*;
-import UseCase.*;
+import Libraries.MenusLib;
+import Libraries.Tool;
+import UseCase.UCActor;
+import UseCase.UCBoundary;
+import UseCase.UCExtend;
+import UseCase.UCGeneral;
+import UseCase.UCInclude;
+import UseCase.UCProcess;
+import UseCase.UCRelation;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -17,6 +24,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -29,6 +37,12 @@ public class Main extends Application {
 	MenusLib menu;
 	TabPane tabPane;
 	Draw draw;
+
+	// UseCase
+	UCRelation ucrelation;
+	UCGeneral ucgeneral;
+	UCInclude ucinclude;
+	UCExtend ucextend;
 
 	@Override
 	public void start(Stage stage) throws Exception {
@@ -46,10 +60,21 @@ public class Main extends Application {
 			scene.setCursor(Cursor.HAND);
 		});
 		menu.gHLineB.setOnAction(e -> {
-			System.out.println("Tabs " + tabPane.getTabs());
 			tabPane.getSelectionModel().getSelectedItem().getContent().setStyle("-fx-background-color:blue;");
-
 		});
+		menu.gBLineB.setOnAction(e -> {
+			System.out.println(" Call GridLine ");
+			Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+			if (menu.isgBLine) {
+				draw.getArea().getChildren().add(menu.gridPane);
+				menu.gridPane.toBack();
+				menu.isgBLine = false;
+			} else {
+				menu.isgBLine = true;
+				draw.getArea().getChildren().remove(menu.gridPane);
+			}
+		});
+
 		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
@@ -59,21 +84,56 @@ public class Main extends Application {
 					@Override
 					public void handle(MouseEvent e) {
 						Object obj = e.getTarget();
-						Color color=Color.web(menu.cpikcer.getValue().toString());
+						Color color = Color.web(menu.cpikcer.getValue().toString());
 						// New Draw
-						if (obj instanceof Draw) {
-							switch(draw.ctool){
-							case UCPROCESS: 
-								UCProcess process=new UCProcess(e.getX(),e.getY(),color);
-								draw.getArea().getChildren().addAll(process);
-								break;
+						if (obj instanceof Pane || (obj instanceof UCBoundary && draw.getCTool() != Tool.POINTER
+								&& draw.getCTool() != Tool.UCBOUNDARY)) {
+							if (draw.getCTool() == Tool.GLabel) {
+								GLabel label = new GLabel(e.getX(), e.getY(), menu.Fonts.fonts);
+								draw.getArea().getChildren().addAll(label, label.getText(false), label.getTool(false));
+							} else if (draw.getCTool() == Tool.UCPROCESS) {
+								UCProcess process = new UCProcess(e.getX(), e.getY(), color);
+								draw.getArea().getChildren().addAll(process, process.getLabel(),
+										process.getText(false));
+							} else if (draw.getCTool() == Tool.UCACTOR) {
+								UCActor actor = new UCActor(e.getX(), e.getY(), color);
+								draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(),
+										actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
+										actor.getText(false));
+							} else if (draw.getCTool() == Tool.UCREALATION) {
+								ucrelation = new UCRelation(e.getX(), e.getY(), e.getX(), e.getY());
+								draw.getArea().getChildren().addAll(ucrelation);
+								menu.isUCRelation = true;
+							} else if (draw.getCTool() == Tool.UCGENERAL) {
+								ucgeneral = new UCGeneral(e.getX(), e.getY(), e.getX(), e.getY(), color);
+								draw.getArea().getChildren().addAll(ucgeneral);
+								menu.isUCGeneral = true;
+							} else if (draw.getCTool() == Tool.UCBOUNDARY) {
+								UCBoundary ucboundary = new UCBoundary(e.getX(), e.getY(), color);
+								draw.getArea().getChildren().addAll(ucboundary);
+								ucboundary.toBack();
+							} else if (draw.getCTool() == Tool.UCINCLUDE) {
+								ucinclude = new UCInclude(e.getX(), e.getY(), e.getX(), e.getY(), color);
+								draw.getArea().getChildren().addAll(ucinclude);
+								menu.isUCInclude = true;
+							} else if (draw.getCTool() == Tool.UCEXTEND) {
+								ucextend = new UCExtend(e.getX(), e.getY(), e.getX(), e.getY(), color);
+								draw.getArea().getChildren().addAll(ucextend);
+								menu.isUCExtend = true;
 							}
+							draw.setCTool(Tool.POINTER); // Null
 						}
 
-						// Use Case
+						// Use Case Color Case
 						if (obj instanceof UCProcess && scene.getCursor() == Cursor.HAND) {
 							UCProcess ucprocess = (UCProcess) obj;
 							ucprocess.setFill(color);
+						} else if (obj instanceof UCActor && scene.getCursor() == Cursor.HAND) {
+							UCActor actor = (UCActor) obj;
+							actor.setFill(color);
+						} else if (obj instanceof UCBoundary && scene.getCursor() == Cursor.HAND) {
+							UCBoundary boundary = (UCBoundary) obj;
+							boundary.setFill(color);
 						}
 
 						scene.setCursor(Cursor.DEFAULT);
@@ -83,11 +143,60 @@ public class Main extends Application {
 				draw.getArea().addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
 					@Override
 					public void handle(MouseEvent e) {
-						Object obj = e.getTarget();
-						if (obj instanceof Sample1) {
-							Sample1 sample = (Sample1) obj;
-							sample.setX(e.getX());
-							sample.setY(e.getY());
+						scene.setCursor(Cursor.MOVE);
+						if (menu.isUCRelation) {
+							ucrelation.setEndX(e.getX());
+							ucrelation.setEndY(e.getY());
+						} else if (menu.isUCGeneral) {
+							ucgeneral.setEndX(e.getX());
+							ucgeneral.setEndY(e.getY());
+						} else if (menu.isUCInclude) {
+							ucinclude.setEndX(e.getX());
+							ucinclude.setEndY(e.getY());
+						} else if (menu.isUCExtend) {
+							ucextend.setEndX(e.getX());
+							ucextend.setEndY(e.getY());
+						}
+
+					}
+				});
+
+				draw.getArea().addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
+					@Override
+					public void handle(MouseEvent e) {
+						scene.setCursor(Cursor.DEFAULT);
+						if (menu.isUCRelation) {
+							ucrelation.setEndX(e.getX());
+							ucrelation.setEndY(e.getY());
+							draw.getArea().getChildren().addAll(ucrelation.getSnode(), ucrelation.getEnode());
+							menu.isUCRelation = false;
+							ucrelation = null;
+						} else if (menu.isUCGeneral) {
+							ucgeneral.setEndX(e.getX());
+							ucgeneral.setEndY(e.getY());
+							ucgeneral.calculateTri();
+							draw.getArea().getChildren().addAll(ucgeneral.getSnode(), ucgeneral.getEnode(),
+									ucgeneral.getTri());
+							menu.isUCGeneral = false;
+							ucgeneral = null;
+						} else if (menu.isUCInclude) {
+							ucinclude.setEndX(e.getX());
+							ucinclude.setEndY(e.getY());
+							ucinclude.update();
+							draw.getArea().getChildren().addAll(ucinclude.getSnode(), ucinclude.getEnode(),
+									ucinclude.top, ucinclude.label);
+
+							menu.isUCInclude = false;
+							ucinclude = null;
+						} else if (menu.isUCExtend) {
+							ucextend.setEndX(e.getX());
+							ucextend.setEndY(e.getY());
+							ucextend.update();
+							draw.getArea().getChildren().addAll(ucextend.getSnode(), ucextend.getEnode(), ucextend.top,
+									ucextend.label);
+
+							menu.isUCExtend = false;
+							ucextend = null;
 						}
 					}
 				});

@@ -1,10 +1,14 @@
 package GUI;
 
+import java.io.File;
+import java.io.IOException;
+
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
 import GTool.GLabel;
 import Hardware.Screen;
 import Libraries.MenusLib;
+import Libraries.OS;
 import Libraries.Tool;
 import UseCase.UCActor;
 import UseCase.UCBoundary;
@@ -38,6 +42,9 @@ public class Main extends Application {
 	TabPane tabPane;
 	Draw draw;
 
+	String osType;
+	File folder; // Temp Diagrams Folder
+
 	// UseCase
 	UCRelation ucrelation;
 	UCGeneral ucgeneral;
@@ -56,7 +63,6 @@ public class Main extends Application {
 		stage.show();
 
 		menu.cpointB.setOnAction(e -> {
-			System.out.println("Selected Color " + menu.cpikcer.getValue().toString());
 			scene.setCursor(Cursor.HAND);
 		});
 		menu.gHLineB.setOnAction(e -> {
@@ -78,128 +84,132 @@ public class Main extends Application {
 		tabPane.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Tab>() {
 			@Override
 			public void changed(ObservableValue<? extends Tab> arg0, Tab arg1, Tab arg2) {
-				Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+				if (tabPane.getTabs().size() > 0) {
 
-				draw.getArea().addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent e) {
-						Object obj = e.getTarget();
-						Color color = Color.web(menu.cpikcer.getValue().toString());
-						// New Draw
-						if (obj instanceof Pane || (obj instanceof UCBoundary && draw.getCTool() != Tool.POINTER
-								&& draw.getCTool() != Tool.UCBOUNDARY)) {
-							if (draw.getCTool() == Tool.GLabel) {
-								GLabel label = new GLabel(e.getX(), e.getY(), menu.Fonts.fonts);
-								draw.getArea().getChildren().addAll(label, label.getText(false), label.getTool(false));
-							} else if (draw.getCTool() == Tool.UCPROCESS) {
-								UCProcess process = new UCProcess(e.getX(), e.getY(), color);
-								draw.getArea().getChildren().addAll(process, process.getLabel(),
-										process.getText(false));
-							} else if (draw.getCTool() == Tool.UCACTOR) {
-								UCActor actor = new UCActor(e.getX(), e.getY(), color);
-								draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(),
-										actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
-										actor.getText(false));
-							} else if (draw.getCTool() == Tool.UCREALATION) {
-								ucrelation = new UCRelation(e.getX(), e.getY(), e.getX(), e.getY());
-								draw.getArea().getChildren().addAll(ucrelation);
-								menu.isUCRelation = true;
-							} else if (draw.getCTool() == Tool.UCGENERAL) {
-								ucgeneral = new UCGeneral(e.getX(), e.getY(), e.getX(), e.getY(), color);
-								draw.getArea().getChildren().addAll(ucgeneral);
-								menu.isUCGeneral = true;
-							} else if (draw.getCTool() == Tool.UCBOUNDARY) {
-								UCBoundary ucboundary = new UCBoundary(e.getX(), e.getY(), color);
-								draw.getArea().getChildren().addAll(ucboundary);
-								ucboundary.toBack();
-							} else if (draw.getCTool() == Tool.UCINCLUDE) {
-								ucinclude = new UCInclude(e.getX(), e.getY(), e.getX(), e.getY(), color);
-								draw.getArea().getChildren().addAll(ucinclude);
-								menu.isUCInclude = true;
-							} else if (draw.getCTool() == Tool.UCEXTEND) {
-								ucextend = new UCExtend(e.getX(), e.getY(), e.getX(), e.getY(), color);
-								draw.getArea().getChildren().addAll(ucextend);
-								menu.isUCExtend = true;
+					Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+
+					draw.getArea().addEventFilter(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
+						@Override
+						public void handle(MouseEvent e) {
+							Object obj = e.getTarget();
+							Color color = Color.web(menu.cpikcer.getValue().toString());
+							// New Draw
+							if (obj instanceof Pane || (obj instanceof UCBoundary && draw.getCTool() != Tool.POINTER
+									&& draw.getCTool() != Tool.UCBOUNDARY)) {
+								if (draw.getCTool() == Tool.GLabel) {
+									GLabel label = new GLabel(e.getX(), e.getY(), menu.Fonts.fonts);
+									draw.getArea().getChildren().addAll(label, label.getText(false),
+											label.getTool(false));
+								} else if (draw.getCTool() == Tool.UCPROCESS) {
+									UCProcess process = new UCProcess(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(process, process.getLabel(),
+											process.getText(false));
+								} else if (draw.getCTool() == Tool.UCACTOR) {
+									UCActor actor = new UCActor(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(),
+											actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
+											actor.getText(false));
+								} else if (draw.getCTool() == Tool.UCREALATION) {
+									ucrelation = new UCRelation(e.getX(), e.getY(), e.getX(), e.getY());
+									draw.getArea().getChildren().addAll(ucrelation);
+									menu.isUCRelation = true;
+								} else if (draw.getCTool() == Tool.UCGENERAL) {
+									ucgeneral = new UCGeneral(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(ucgeneral);
+									menu.isUCGeneral = true;
+								} else if (draw.getCTool() == Tool.UCBOUNDARY) {
+									UCBoundary ucboundary = new UCBoundary(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(ucboundary);
+									ucboundary.toBack();
+								} else if (draw.getCTool() == Tool.UCINCLUDE) {
+									ucinclude = new UCInclude(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(ucinclude);
+									menu.isUCInclude = true;
+								} else if (draw.getCTool() == Tool.UCEXTEND) {
+									ucextend = new UCExtend(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(ucextend);
+									menu.isUCExtend = true;
+								}
+								draw.setCTool(Tool.POINTER); // Null
 							}
-							draw.setCTool(Tool.POINTER); // Null
+
+							// Use Case Color Case
+							if (obj instanceof UCProcess && scene.getCursor() == Cursor.HAND) {
+								UCProcess ucprocess = (UCProcess) obj;
+								ucprocess.setFill(color);
+							} else if (obj instanceof UCActor && scene.getCursor() == Cursor.HAND) {
+								UCActor actor = (UCActor) obj;
+								actor.setFill(color);
+							} else if (obj instanceof UCBoundary && scene.getCursor() == Cursor.HAND) {
+								UCBoundary boundary = (UCBoundary) obj;
+								boundary.setFill(color);
+							}
+
+							scene.setCursor(Cursor.DEFAULT);
 						}
+					});
 
-						// Use Case Color Case
-						if (obj instanceof UCProcess && scene.getCursor() == Cursor.HAND) {
-							UCProcess ucprocess = (UCProcess) obj;
-							ucprocess.setFill(color);
-						} else if (obj instanceof UCActor && scene.getCursor() == Cursor.HAND) {
-							UCActor actor = (UCActor) obj;
-							actor.setFill(color);
-						} else if (obj instanceof UCBoundary && scene.getCursor() == Cursor.HAND) {
-							UCBoundary boundary = (UCBoundary) obj;
-							boundary.setFill(color);
+					draw.getArea().addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+						@Override
+						public void handle(MouseEvent e) {
+							scene.setCursor(Cursor.MOVE);
+							if (menu.isUCRelation) {
+								ucrelation.setEndX(e.getX());
+								ucrelation.setEndY(e.getY());
+							} else if (menu.isUCGeneral) {
+								ucgeneral.setEndX(e.getX());
+								ucgeneral.setEndY(e.getY());
+							} else if (menu.isUCInclude) {
+								ucinclude.setEndX(e.getX());
+								ucinclude.setEndY(e.getY());
+							} else if (menu.isUCExtend) {
+								ucextend.setEndX(e.getX());
+								ucextend.setEndY(e.getY());
+							}
+
 						}
+					});
 
-						scene.setCursor(Cursor.DEFAULT);
-					}
-				});
+					draw.getArea().addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
+						@Override
+						public void handle(MouseEvent e) {
+							scene.setCursor(Cursor.DEFAULT);
+							if (menu.isUCRelation) {
+								ucrelation.setEndX(e.getX());
+								ucrelation.setEndY(e.getY());
+								draw.getArea().getChildren().addAll(ucrelation.getSnode(), ucrelation.getEnode());
+								menu.isUCRelation = false;
+								ucrelation = null;
+							} else if (menu.isUCGeneral) {
+								ucgeneral.setEndX(e.getX());
+								ucgeneral.setEndY(e.getY());
+								ucgeneral.calculateTri();
+								draw.getArea().getChildren().addAll(ucgeneral.getSnode(), ucgeneral.getEnode(),
+										ucgeneral.getTri());
+								menu.isUCGeneral = false;
+								ucgeneral = null;
+							} else if (menu.isUCInclude) {
+								ucinclude.setEndX(e.getX());
+								ucinclude.setEndY(e.getY());
+								ucinclude.update();
+								draw.getArea().getChildren().addAll(ucinclude.getSnode(), ucinclude.getEnode(),
+										ucinclude.top, ucinclude.label);
 
-				draw.getArea().addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent e) {
-						scene.setCursor(Cursor.MOVE);
-						if (menu.isUCRelation) {
-							ucrelation.setEndX(e.getX());
-							ucrelation.setEndY(e.getY());
-						} else if (menu.isUCGeneral) {
-							ucgeneral.setEndX(e.getX());
-							ucgeneral.setEndY(e.getY());
-						} else if (menu.isUCInclude) {
-							ucinclude.setEndX(e.getX());
-							ucinclude.setEndY(e.getY());
-						} else if (menu.isUCExtend) {
-							ucextend.setEndX(e.getX());
-							ucextend.setEndY(e.getY());
+								menu.isUCInclude = false;
+								ucinclude = null;
+							} else if (menu.isUCExtend) {
+								ucextend.setEndX(e.getX());
+								ucextend.setEndY(e.getY());
+								ucextend.update();
+								draw.getArea().getChildren().addAll(ucextend.getSnode(), ucextend.getEnode(),
+										ucextend.top, ucextend.label);
+
+								menu.isUCExtend = false;
+								ucextend = null;
+							}
 						}
-
-					}
-				});
-
-				draw.getArea().addEventFilter(MouseEvent.MOUSE_RELEASED, new EventHandler<MouseEvent>() {
-					@Override
-					public void handle(MouseEvent e) {
-						scene.setCursor(Cursor.DEFAULT);
-						if (menu.isUCRelation) {
-							ucrelation.setEndX(e.getX());
-							ucrelation.setEndY(e.getY());
-							draw.getArea().getChildren().addAll(ucrelation.getSnode(), ucrelation.getEnode());
-							menu.isUCRelation = false;
-							ucrelation = null;
-						} else if (menu.isUCGeneral) {
-							ucgeneral.setEndX(e.getX());
-							ucgeneral.setEndY(e.getY());
-							ucgeneral.calculateTri();
-							draw.getArea().getChildren().addAll(ucgeneral.getSnode(), ucgeneral.getEnode(),
-									ucgeneral.getTri());
-							menu.isUCGeneral = false;
-							ucgeneral = null;
-						} else if (menu.isUCInclude) {
-							ucinclude.setEndX(e.getX());
-							ucinclude.setEndY(e.getY());
-							ucinclude.update();
-							draw.getArea().getChildren().addAll(ucinclude.getSnode(), ucinclude.getEnode(),
-									ucinclude.top, ucinclude.label);
-
-							menu.isUCInclude = false;
-							ucinclude = null;
-						} else if (menu.isUCExtend) {
-							ucextend.setEndX(e.getX());
-							ucextend.setEndY(e.getY());
-							ucextend.update();
-							draw.getArea().getChildren().addAll(ucextend.getSnode(), ucextend.getEnode(), ucextend.top,
-									ucextend.label);
-
-							menu.isUCExtend = false;
-							ucextend = null;
-						}
-					}
-				});
+					});
+				}
 			}
 		});
 
@@ -210,9 +220,13 @@ public class Main extends Application {
 			container.setDisable(true);
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
-			if (box.getValue().equals("finish")) {
+			if (box.condition.equals("finish")) {
 				container.setCenter(tabPane);
-				addNewTab(box.getFileName(), box.getType(), box.getPath());
+				try {
+					addNewTab(box.getFileName(), box.folder, box.diagram);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 			container.setDisable(false);
 		});
@@ -223,8 +237,22 @@ public class Main extends Application {
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
 			if (box.getValue().equals("finish")) {
-				// container.setCenter(tabPane);
-				// addNewTab(box.getFileName(), box.getType(), box.getPath());
+				// Create Project Folder
+				File file = null;
+				switch (osType) {
+				case "Unix":
+					file = new File("Diagrams/" + box.nameF.getText().toString().trim());
+					if (!file.exists()) {
+						file.mkdir();
+						System.out.println("Folder @" + box.nameF.getText().toString() + " is created!");
+					} else {
+						System.out.println("Folder already exists.");
+					}
+					break;
+				case "Windows":
+					// Not Support!
+					break;
+				}
 			}
 			container.setDisable(false);
 		});
@@ -247,14 +275,52 @@ public class Main extends Application {
 		sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 		sp.setContent(tabPane);
 		container.setCenter(sp);
+		OS os = new OS();
+		if (os.isWindows()) {
+			osType = "Windows";
+		} else if (os.isUnix()) {
+			osType = "Unix";
+		}
+		System.out.println("OS Type :" + osType);
+
+		folder = new File("Diagrams");
+		if (!folder.exists()) {
+			folder.mkdir();
+			System.out.println("Diagram Folder is created");
+		} else {
+			System.out.println("Diagram Folder is already exists");
+		}
 	}
 
 	public static void main(String[] args) {
 		Application.launch(args);
 	}
 
-	public void addNewTab(String name, int diagram, String path) {
+	public void addNewTab(String name, String folder, int diagram) throws IOException {
 		Tab tab = new Tab();
+		// Select Folder
+		File project = new File("Diagrams/" + folder);
+		if (project.exists() && project.isDirectory()) {
+			System.out.println("Folder @" + folder + " is exists and Directory");
+			// Create File For Diagram
+			File file = null;
+			switch (osType) {
+			case "Unix":
+				file = new File(project.getPath() + "/" + name + ".xml");
+				if (file.createNewFile()) {
+					System.out.println("File @" + name + " is created!");
+				} else {
+					System.out.println("File already exists.");
+				}
+				break;
+			case "Windows":
+				// Not Support!
+				break;
+			}
+		} else {
+			System.out.println("Folder @" + folder + " is missing.");
+		}
+
 		draw = new Draw(scene, diagram);
 		tab.setContent(draw);
 		tab.setText(name);

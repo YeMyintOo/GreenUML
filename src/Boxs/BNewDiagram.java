@@ -1,9 +1,13 @@
 package Boxs;
 
 import java.io.File;
+
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
@@ -13,19 +17,20 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class BNewDiagram extends Stage{
-	private String fileName;
-	private int type;
-	private String path;
+public class BNewDiagram extends Stage {
+	// Return Data
+	public String fileName;
+	public int diagram;
+	public String folder; // Project Name
 
-	private TextField nameF;// Name for Diagram
+	public TextField nameF;// Name for Diagram
 	private Label isnamed; // Already name?
-	private TextField pathF;// Path Folder
-	private Button pathB;
+	private ComboBox projectCB;// Project ComboBox
+	private String[] projects;
+	// private Button pathB;
 
 	private RadioButton r1;
 	private RadioButton r2;
@@ -42,35 +47,35 @@ public class BNewDiagram extends Stage{
 	private Button resetB;
 
 	// Return value
-	private String value;
-	
+	public String condition;
 
 	public BNewDiagram(Stage owner) {
 		super();
 		setResizable(false);
-		value = "default";
+		condition = "default";
 		initModality(Modality.WINDOW_MODAL); // Prevent click parent stage
 		initOwner(owner);
 		setTitle("Choose New Diagram");
+		loadProjects();
 
 		BorderPane pane = new BorderPane();
 
 		// Information
 		GridPane p1 = new GridPane();
 		p1.setHgap(20);
-		p1.setVgap(5);
+		p1.setVgap(10);
 		p1.setStyle("-fx-padding: 10;");
 		Label nameL = new Label("Name");
 		nameF = new TextField();
 		nameF.setTooltip(new Tooltip("Give a name For your diagram."));
 		isnamed = new Label();
 		p1.addRow(0, nameL, nameF, isnamed); // Add Components in Row 0
-		pathF = new TextField();
-		pathF.setPrefWidth(200);
-		setPath(pathF.getText().trim());
-		Label pathL = new Label("Path");
-		pathB = new Button("Browse");
-		p1.addRow(1, pathL, pathF, pathB);
+
+		projectCB = new ComboBox<>();
+		projectCB.setPrefWidth(200);
+		projectCB.getItems().addAll(projects);
+		Label projL = new Label("Project");
+		p1.addRow(1, projL, projectCB);
 
 		// Diagram Types
 		GridPane p2 = new GridPane();
@@ -117,17 +122,17 @@ public class BNewDiagram extends Stage{
 		Scene scene = new Scene(pane, 400, 400, Color.WHITE);
 		setScene(scene);
 
-		//closeB.setCancelButton(true);
+		// closeB.setCancelButton(true);
 		closeB.setOnAction(e -> {
-			setValue("close");
+			condition = "close";
 			close();
 		});
 
 		okB.setOnAction(e -> {
-			if (!nameF.getText().equals("")) {
+			if (!nameF.getText().equals("") && projectCB.getSelectionModel().getSelectedIndex()!=-1) {
 				setFileName(nameF.getText());
-				setType(calculateType());
-				setValue("finish");
+				diagram = calculateType();
+				condition = "finish";
 				close();
 			}
 		});
@@ -137,13 +142,10 @@ public class BNewDiagram extends Stage{
 			r1.setSelected(true);
 		});
 
-		// Select Which Project under Which WorkSpace
-		pathB.setOnAction(e -> {
-			DirectoryChooser wsChooser = new DirectoryChooser();
-			wsChooser.setTitle("Select Project");
-			File selectedDirectory = wsChooser.showDialog(this);
-			pathF.setText(selectedDirectory.toString());
-			setPath(pathF.getText().trim());
+		projectCB.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Object>() {
+			public void changed(ObservableValue<?> ov, Object t, Object t1) {
+				folder = projectCB.getSelectionModel().getSelectedItem().toString();
+			}
 		});
 
 	}
@@ -180,28 +182,12 @@ public class BNewDiagram extends Stage{
 		this.fileName = fileName;
 	}
 
-	public int getType() {
-		return type;
+	public void loadProjects() {
+		File path = new File("Diagrams");
+		File[] folders = path.listFiles(File::isDirectory);
+		projects = new String[folders.length];
+		for (int i = 0; i < folders.length; i++) {
+			projects[i] = folders[i].getName();
+		}
 	}
-
-	public void setType(int type) {
-		this.type = type;
-	}
-
-	public String getPath() {
-		return path;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
 }

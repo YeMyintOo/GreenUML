@@ -1,13 +1,11 @@
 package Boxs;
 
-import java.io.File;
+
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -15,12 +13,11 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-
 public class BNewProject extends Stage {
 
 	// New Project Box
 	private Label nameL;
-	private TextField nameF;
+	public TextField nameF;
 	private Label wsL;
 	private TextField wsF;
 	private Button wsB;
@@ -93,39 +90,10 @@ public class BNewProject extends Stage {
 			close();
 		});
 		okB.setOnAction(e -> {
-			// Create Project
-			// Create Folder
 			if (!nameF.getText().equals("")) {
-				File file = null;
-				// if(oS.isWindows()){
-				// file = new File(systemHandler.getDefaultWorkspace() + "\\" +
-				// nameF.getText());
-				// }
-				// if(oS.isUnix()){
-				// file = new File(systemHandler.getDefaultWorkspace() + "/" +
-				// nameF.getText());
-				// }
-
 				try {
-					if (!file.exists()) {
-						file.mkdirs(); // Make directory
-						System.out.println("Project Folder is created");
-						//createProjectProperties(file.getAbsolutePath());
-						// Make default Project
-						// systemHandler.setDefaultProject(file.getAbsolutePath());
-						System.out.println("Make Default Project");
-						setValue("finish");
-						close();
-					} else {
-						// File exist
-						Alert alert = new Alert(AlertType.ERROR);
-						alert.initModality(Modality.APPLICATION_MODAL);
-						alert.initOwner(this);
-						alert.setTitle("Error");
-						alert.setHeaderText("File alwary exits");
-						alert.setContentText("Choose different project name");
-						alert.showAndWait();
-					}
+					setValue("finish");
+					close();
 				} catch (Exception ee) {
 					ee.printStackTrace();
 				}

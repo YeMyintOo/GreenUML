@@ -1,6 +1,5 @@
 package Libraries;
 
-
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
@@ -45,10 +44,12 @@ public class MenusLib {
 	public Button gBLineB; // Background
 	public boolean isgBLine;
 	public BorderPane gridPane;
-	
+
+	// System
 	public Fonts Fonts;
 	
-	//UseCase
+
+	// UseCase
 	public boolean isUCRelation;
 	public boolean isUCGeneral;
 	public boolean isUCInclude;
@@ -61,12 +62,11 @@ public class MenusLib {
 
 		nProject = new MenuItem("New Project");
 		oProject = new MenuItem("Open Project");
-		cWorkSpace = new MenuItem("WorkSpace");
 		nFile = new MenuItem("New Diagram");
-		oFile = new MenuItem("Open Diagram");
+		//oFile = new MenuItem("Open Diagram");
 		save = new MenuItem("Save");
 		exit = new MenuItem("Exit");
-		file.getItems().addAll(nProject, oProject, cWorkSpace, nFile, oFile, save, exit);
+		file.getItems().addAll(nProject, oProject, nFile, save, exit);
 
 		copy = new MenuItem("Copy");
 		paste = new MenuItem("Paste");
@@ -93,11 +93,11 @@ public class MenusLib {
 		gBLineB = new Button("GridLine");
 		rSelectB = new Button("Region Select");
 		sbar.getChildren().addAll(pointB, cpointB, cpikcer, handB, saveB, printB, gHLineB, gVLineB, gBLineB, rSelectB);
+
+		Fonts = new Fonts();
 		
-		Fonts=new Fonts();
-		
-		isgBLine=true;
-		gridPane=new BorderPane();
+		isgBLine = true;
+		gridPane = new BorderPane();
 		setGridLine();
 	}
 
@@ -114,6 +114,6 @@ public class MenusLib {
 			gridPane.getChildren().add(l);
 			k = k + 20;
 		}
-		
+
 	}
 }

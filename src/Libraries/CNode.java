@@ -7,7 +7,7 @@ public class CNode extends Circle {
 	//General Line
 	public CNode() {
 		super();
-		setFill(Color.BEIGE);
+		setFill(Color.WHITESMOKE);
 		setRadius(6);
 	}
 }

@@ -44,7 +44,14 @@ public class Draw extends BorderPane {
 
 		glabel = new Button("G");
 
-		initLoadUC();
+		switch (diagram) {
+		case 1:
+			initLoadUC();
+			break;
+		case 2:
+			break;
+		}
+
 		tool.getChildren().addAll(glabel);
 
 		glabel.setOnAction(e -> {

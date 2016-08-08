@@ -1,5 +1,8 @@
 package UseCase;
 
+import java.io.IOException;
+
+import XMLFactory.CopyXML;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,6 +12,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -16,10 +21,11 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 public class UCProcess extends Ellipse {
-	// Cycle
-	private StringProperty data;
+	private CopyXML copy;
+	public StringProperty data;
 	private Text label;
 	private TextField text;
 	private DropShadow shape;
@@ -27,7 +33,9 @@ public class UCProcess extends Ellipse {
 	private Button bL; // Left;
 	private Button bR; // Right;
 
-	public UCProcess(double centerX, double centerY, Color color) {
+	final KeyCombination copyKey = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+
+	public UCProcess(Stage owner, double centerX, double centerY, Color color) {
 		super(centerX, centerY, 100, 40);
 		setFill(color);
 		setStroke(Color.GRAY);
@@ -98,6 +106,24 @@ public class UCProcess extends Ellipse {
 			}
 		});
 
+		owner.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+
+			@Override
+			public void handle(KeyEvent key) {
+				if (isHover()) {
+					if (copyKey.match(key)) {
+						System.out.println("Copy UseCase Process #Label-" + data.get());
+						try {
+							copy = new CopyXML();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						copy.copyUCProcess(getCenterX(), getCenterY(), getRadiusX(), getRadiusY(), data.get(),
+								getFill().toString());
+					}
+				}
+			}
+		});
 	}
 
 	public final StringProperty labelProperty() {

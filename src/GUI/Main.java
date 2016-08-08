@@ -3,6 +3,11 @@ package GUI;
 import java.io.File;
 import java.io.IOException;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
+
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
 import GTool.GLabel;
@@ -17,6 +22,7 @@ import UseCase.UCGeneral;
 import UseCase.UCInclude;
 import UseCase.UCProcess;
 import UseCase.UCRelation;
+import XMLFactory.CopyXML;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -26,6 +32,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
@@ -41,6 +48,7 @@ public class Main extends Application {
 	MenusLib menu;
 	TabPane tabPane;
 	Draw draw;
+	CopyXML copyxml;
 
 	String osType;
 	File folder; // Temp Diagrams Folder
@@ -65,6 +73,13 @@ public class Main extends Application {
 		menu.cpointB.setOnAction(e -> {
 			scene.setCursor(Cursor.HAND);
 		});
+		menu.deleteB.setOnAction(e -> {
+			scene.setCursor(Cursor.CROSSHAIR);
+		});
+		menu.selectB.setOnAction(e -> {
+			scene.setCursor(Cursor.OPEN_HAND);
+		});
+
 		menu.gHLineB.setOnAction(e -> {
 			tabPane.getSelectionModel().getSelectedItem().getContent().setStyle("-fx-background-color:blue;");
 		});
@@ -78,6 +93,40 @@ public class Main extends Application {
 			} else {
 				menu.isgBLine = true;
 				draw.getArea().getChildren().remove(menu.gridPane);
+			}
+		});
+
+		stage.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent key) {
+				if (menu.pasteKey.match(key)) {
+					menu.dbFactory = DocumentBuilderFactory.newInstance();
+					try {
+						menu.dBuilder = menu.dbFactory.newDocumentBuilder();
+						menu.doc = menu.dBuilder.parse("Temp/Copy.xml");
+						switch (menu.doc.getElementsByTagName("diagram").item(0).getTextContent()) {
+						case "UCProcess":
+							double x = Double
+									.parseDouble(menu.doc.getElementsByTagName("centerx").item(0).getTextContent());
+							double y = Double
+									.parseDouble(menu.doc.getElementsByTagName("centery").item(0).getTextContent());
+							double xr = Double
+									.parseDouble(menu.doc.getElementsByTagName("xradius").item(0).getTextContent());
+							double yr = Double
+									.parseDouble(menu.doc.getElementsByTagName("yradius").item(0).getTextContent());
+							String label = menu.doc.getElementsByTagName("label").item(0).getTextContent();
+							String color = menu.doc.getElementsByTagName("color").item(0).getTextContent();
+
+							UCProcess process = new UCProcess(stage, x + 10, y + 10, Color.web(color));
+							process.data.set(label);
+							draw.getArea().getChildren().addAll(process, process.getLabel(), process.getText(false));
+
+							break;
+						}
+					} catch (Exception e) {
+
+					}
+				}
 			}
 		});
 
@@ -101,7 +150,7 @@ public class Main extends Application {
 									draw.getArea().getChildren().addAll(label, label.getText(false),
 											label.getTool(false));
 								} else if (draw.getCTool() == Tool.UCPROCESS) {
-									UCProcess process = new UCProcess(e.getX(), e.getY(), color);
+									UCProcess process = new UCProcess(stage, e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(process, process.getLabel(),
 											process.getText(false));
 								} else if (draw.getCTool() == Tool.UCACTOR) {
@@ -133,16 +182,39 @@ public class Main extends Application {
 								draw.setCTool(Tool.POINTER); // Null
 							}
 
-							// Use Case Color Case
-							if (obj instanceof UCProcess && scene.getCursor() == Cursor.HAND) {
-								UCProcess ucprocess = (UCProcess) obj;
-								ucprocess.setFill(color);
-							} else if (obj instanceof UCActor && scene.getCursor() == Cursor.HAND) {
-								UCActor actor = (UCActor) obj;
-								actor.setFill(color);
-							} else if (obj instanceof UCBoundary && scene.getCursor() == Cursor.HAND) {
-								UCBoundary boundary = (UCBoundary) obj;
-								boundary.setFill(color);
+							// Color Case
+							if (scene.getCursor() == Cursor.HAND) {
+								if (obj instanceof UCProcess) {
+									UCProcess ucprocess = (UCProcess) obj;
+									ucprocess.setFill(color);
+								} else if (obj instanceof UCActor) {
+									UCActor actor = (UCActor) obj;
+									actor.setFill(color);
+								} else if (obj instanceof UCBoundary) {
+									UCBoundary boundary = (UCBoundary) obj;
+									boundary.setFill(color);
+								}
+							} else
+
+							// Delete Case
+							if (scene.getCursor() == Cursor.CROSSHAIR) {
+								if (obj instanceof GLabel) {
+									GLabel label = (GLabel) obj;
+									draw.getArea().getChildren().removeAll(label, label.getText(false),
+											label.getTool(false));
+								} else if (obj instanceof UCProcess) {
+									UCProcess ucprocess = (UCProcess) obj;
+									draw.getArea().getChildren().removeAll(ucprocess, ucprocess.getLabel(),
+											ucprocess.getText(false));
+								} else if (obj instanceof UCActor) {
+									UCActor actor = (UCActor) obj;
+									draw.getArea().getChildren().removeAll(actor, actor.getBody(), actor.getLeg(),
+											actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
+											actor.getText(false));
+								} else if (obj instanceof UCBoundary) {
+									UCBoundary boundary = (UCBoundary) obj;
+									draw.getArea().getChildren().removeAll(boundary);
+								}
 							}
 
 							scene.setCursor(Cursor.DEFAULT);
@@ -261,7 +333,7 @@ public class Main extends Application {
 
 	}
 
-	public void initState() {
+	public void initState() throws IOException {
 		container = new BorderPane();
 		screen = new Screen();
 		head = new VBox();
@@ -269,6 +341,7 @@ public class Main extends Application {
 		head.getChildren().addAll(menu.bar, menu.sbar);
 		tabPane = new TabPane();
 		tabPane.setMinWidth(screen.getWidth());
+
 		container.setTop(head);
 		ScrollPane sp = new ScrollPane();
 		sp.setPrefWidth(screen.getWidth() - 20);
@@ -290,6 +363,9 @@ public class Main extends Application {
 		} else {
 			System.out.println("Diagram Folder is already exists");
 		}
+
+		System.out.println("Copy.xml File Loading...");
+		copyxml = new CopyXML();
 	}
 
 	public static void main(String[] args) {
@@ -307,8 +383,15 @@ public class Main extends Application {
 			switch (osType) {
 			case "Unix":
 				file = new File(project.getPath() + "/" + name + ".xml");
-				if (file.createNewFile()) {
-					System.out.println("File @" + name + " is created!");
+				if (!file.exists()) {
+					if (file.createNewFile()) {
+						System.out.println("File @" + name + " is created!");
+						draw = new Draw(scene, diagram);
+						tab.setContent(draw);
+						tab.setText(name);
+						tabPane.getTabs().add(tab);
+
+					}
 				} else {
 					System.out.println("File already exists.");
 				}
@@ -321,11 +404,5 @@ public class Main extends Application {
 			System.out.println("Folder @" + folder + " is missing.");
 		}
 
-		draw = new Draw(scene, diagram);
-		tab.setContent(draw);
-		tab.setText(name);
-		tabPane.getTabs().add(tab);
-		tabPane.setMaxWidth(screen.getWidth() - 500);
 	}
-
 }

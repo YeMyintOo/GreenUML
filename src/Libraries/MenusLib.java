@@ -1,15 +1,29 @@
 package Libraries;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 public class MenusLib {
+	
+	public DocumentBuilderFactory dbFactory;
+	public DocumentBuilder dBuilder;
+	public Document doc;
+	public final KeyCombination pasteKey;
+
 	public MenuItem nProject; // New Project
 	public MenuItem oProject; // Open Project
 	public MenuItem cWorkSpace; // WorkSpace
@@ -35,10 +49,11 @@ public class MenusLib {
 	public Button pointB;
 	public Button cpointB;
 	public ColorPicker cpikcer;
-	public Button handB;
+	public Button deleteB;
+	public Button selectB;
+
 	public Button gHLineB; // Horizontal
 	public Button gVLineB; // Vertical
-
 	public Button rSelectB;// Region Select;
 
 	public Button gBLineB; // Background
@@ -47,7 +62,6 @@ public class MenusLib {
 
 	// System
 	public Fonts Fonts;
-	
 
 	// UseCase
 	public boolean isUCRelation;
@@ -56,6 +70,8 @@ public class MenusLib {
 	public boolean isUCExtend;
 
 	public MenusLib() {
+		pasteKey = new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_ANY);
+
 		bar = new MenuBar();
 		file = new Menu("File");
 		edit = new Menu("Edit");
@@ -63,7 +79,7 @@ public class MenusLib {
 		nProject = new MenuItem("New Project");
 		oProject = new MenuItem("Open Project");
 		nFile = new MenuItem("New Diagram");
-		//oFile = new MenuItem("Open Diagram");
+		// oFile = new MenuItem("Open Diagram");
 		save = new MenuItem("Save");
 		exit = new MenuItem("Exit");
 		file.getItems().addAll(nProject, oProject, nFile, save, exit);
@@ -85,17 +101,19 @@ public class MenusLib {
 		pointB = new Button("Pointer");
 		cpointB = new Button("Color Pointer");
 		cpikcer = new ColorPicker();
-		handB = new Button("Hand");
+		deleteB = new Button("Delete");
+		selectB = new Button("Select");
 		saveB = new Button("Save");
 		printB = new Button("Print");
 		gHLineB = new Button("GuideLine (Horizontal)");
 		gVLineB = new Button("GuideLine (Vertical)");
 		gBLineB = new Button("GridLine");
 		rSelectB = new Button("Region Select");
-		sbar.getChildren().addAll(pointB, cpointB, cpikcer, handB, saveB, printB, gHLineB, gVLineB, gBLineB, rSelectB);
+		sbar.getChildren().addAll(pointB, cpointB, cpikcer, selectB, deleteB, saveB, printB, gHLineB, gVLineB, gBLineB,
+				rSelectB);
 
 		Fonts = new Fonts();
-		
+
 		isgBLine = true;
 		gridPane = new BorderPane();
 		setGridLine();

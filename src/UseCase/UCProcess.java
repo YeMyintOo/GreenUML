@@ -26,7 +26,7 @@ import javafx.stage.Stage;
 public class UCProcess extends Ellipse {
 	private CopyXML copy;
 	public StringProperty data;
-	private Text label;
+	public Text label;
 	private TextField text;
 	private DropShadow shape;
 
@@ -34,6 +34,7 @@ public class UCProcess extends Ellipse {
 	private Button bR; // Right;
 
 	final KeyCombination copyKey = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+	final KeyCombination cutKey = new KeyCodeCombination(KeyCode.X, KeyCombination.CONTROL_ANY);
 
 	public UCProcess(Stage owner, double centerX, double centerY, Color color) {
 		super(centerX, centerY, 100, 40);
@@ -112,9 +113,9 @@ public class UCProcess extends Ellipse {
 			public void handle(KeyEvent key) {
 				if (isHover()) {
 					if (copyKey.match(key)) {
-						System.out.println("Copy UseCase Process #Label-" + data.get());
 						try {
-							copy = new CopyXML();
+							if (copy == null)
+								copy = new CopyXML();
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

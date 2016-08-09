@@ -18,7 +18,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 
 public class MenusLib {
-	
+
 	public DocumentBuilderFactory dbFactory;
 	public DocumentBuilder dBuilder;
 	public Document doc;
@@ -26,7 +26,7 @@ public class MenusLib {
 
 	public MenuItem nProject; // New Project
 	public MenuItem oProject; // Open Project
-	public MenuItem cWorkSpace; // WorkSpace
+	public MenuItem export; //
 	public MenuItem nFile; // New File
 	public MenuItem oFile;// Open File
 	public MenuItem save; // Save
@@ -64,6 +64,7 @@ public class MenusLib {
 	public Fonts Fonts;
 
 	// UseCase
+	
 	public boolean isUCRelation;
 	public boolean isUCGeneral;
 	public boolean isUCInclude;
@@ -77,20 +78,20 @@ public class MenusLib {
 		edit = new Menu("Edit");
 
 		nProject = new MenuItem("New Project");
-		oProject = new MenuItem("Open Project");
 		nFile = new MenuItem("New Diagram");
-		// oFile = new MenuItem("Open Diagram");
+		oProject = new MenuItem("Open..");
+		export = new MenuItem("Export..");
 		save = new MenuItem("Save");
 		exit = new MenuItem("Exit");
-		file.getItems().addAll(nProject, oProject, nFile, save, exit);
+		file.getItems().addAll(nProject, nFile, oProject, export, save, exit);
 
 		copy = new MenuItem("Copy");
 		paste = new MenuItem("Paste");
-		cut = new MenuItem("Cut");
-		select = new MenuItem("Select");
-		selectAll = new MenuItem("Select All");
+		// cut = new MenuItem("Cut");
+		// select = new MenuItem("Select");
+		// selectAll = new MenuItem("Select All");
 		delete = new MenuItem("Delete");
-		edit.getItems().addAll(copy, paste, cut, select, selectAll, delete);
+		edit.getItems().addAll(copy, paste, delete);
 
 		bar.getMenus().addAll(file, edit);
 

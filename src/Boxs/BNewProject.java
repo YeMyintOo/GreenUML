@@ -1,6 +1,5 @@
 package Boxs;
 
-
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -18,9 +17,6 @@ public class BNewProject extends Stage {
 	// New Project Box
 	private Label nameL;
 	public TextField nameF;
-	private Label wsL;
-	private TextField wsF;
-	private Button wsB;
 
 	private Button okB;
 	private Button closeB;
@@ -39,32 +35,17 @@ public class BNewProject extends Stage {
 		BorderPane pane = new BorderPane();
 
 		BorderPane infoP = new BorderPane();
+		
 		// Name
 		GridPane nameP = new GridPane();
-		nameP.setStyle("-fx-padding: 10;");
+		nameP.setStyle("-fx-padding: 40 10 0 10;");
 		nameL = new Label("Name");
 		nameL.setStyle("-fx-padding: 5 20 0 0;");
 		nameF = new TextField();
 		nameP.addRow(0, nameL, nameF);
 
-		// WorkSpace
-		GridPane wsP = new GridPane();
-		wsP.setStyle("-fx-padding: 10;");
-		wsP.setHgap(10);
-		wsL = new Label("Workspace");
-		wsL.setStyle("-fx-padding: 5 0 5 0;");
-		wsF = new TextField();
-		wsF.setPrefWidth(200);
-		// Default workspace
-		// wsF.setText(systemHandler.getDefaultWorkspace());
-		wsB = new Button("Change");
-
-		wsP.addRow(0, wsL);
-		wsP.addRow(1, wsF, wsB);
-
-		infoP.setTop(nameP);
-		infoP.setCenter(wsP);
-
+		infoP.setCenter(nameP);
+		
 		// Button Panel
 		HBox btn = new HBox();
 		okB = new Button("Finish");
@@ -78,12 +59,11 @@ public class BNewProject extends Stage {
 		pane.setCenter(infoP);
 		pane.setBottom(btn);
 
-		Scene scene = new Scene(pane, 400, 200, Color.WHITE);
+		Scene scene = new Scene(pane, 400, 150, Color.WHITE);
 		setScene(scene);
 
 		resetB.setOnAction(e -> {
 			nameF.setText("");
-			wsF.setText("");
 		});
 		closeB.setOnAction(e -> {
 			setValue("close");

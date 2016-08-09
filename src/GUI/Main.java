@@ -2,14 +2,14 @@ package GUI;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.w3c.dom.Node;
-import org.xml.sax.SAXException;
-
+import Boxs.BExport;
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
+import Boxs.BOpen;
 import GTool.GLabel;
 import Hardware.Screen;
 import Libraries.MenusLib;
@@ -54,6 +54,7 @@ public class Main extends Application {
 	File folder; // Temp Diagrams Folder
 
 	// UseCase
+	public ArrayList<Object> UCobjects;
 	UCRelation ucrelation;
 	UCGeneral ucgeneral;
 	UCInclude ucinclude;
@@ -100,6 +101,7 @@ public class Main extends Application {
 			@Override
 			public void handle(KeyEvent key) {
 				if (menu.pasteKey.match(key)) {
+					System.out.println("Paste");
 					menu.dbFactory = DocumentBuilderFactory.newInstance();
 					try {
 						menu.dBuilder = menu.dbFactory.newDocumentBuilder();
@@ -114,11 +116,16 @@ public class Main extends Application {
 									.parseDouble(menu.doc.getElementsByTagName("xradius").item(0).getTextContent());
 							double yr = Double
 									.parseDouble(menu.doc.getElementsByTagName("yradius").item(0).getTextContent());
-							String label = menu.doc.getElementsByTagName("label").item(0).getTextContent();
+							String text = menu.doc.getElementsByTagName("label").item(0).getTextContent();
 							String color = menu.doc.getElementsByTagName("color").item(0).getTextContent();
 
 							UCProcess process = new UCProcess(stage, x + 10, y + 10, Color.web(color));
-							process.data.set(label);
+							process.setRadiusX(xr);
+							process.setRadiusY(yr);
+							process.data.set(text);
+							process.label.layoutXProperty().bind(process.centerXProperty()
+									.subtract(process.label.layoutBoundsProperty().getValue().getWidth() / 2));
+
 							draw.getArea().getChildren().addAll(process, process.getLabel(), process.getText(false));
 
 							break;
@@ -153,6 +160,7 @@ public class Main extends Application {
 									UCProcess process = new UCProcess(stage, e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(process, process.getLabel(),
 											process.getText(false));
+									UCobjects.add(process);
 								} else if (draw.getCTool() == Tool.UCACTOR) {
 									UCActor actor = new UCActor(e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(),
@@ -302,6 +310,19 @@ public class Main extends Application {
 			}
 			container.setDisable(false);
 		});
+
+		menu.oProject.setOnAction(e -> {
+			BOpen box = new BOpen(stage);
+			box.sizeToScene();
+			container.setDisable(true);
+			box.setAlwaysOnTop(true);
+			box.showAndWait();
+			if (box.condition.equals("finish")) {
+
+			}
+			container.setDisable(false);
+		});
+
 		menu.nProject.setOnAction(e -> {
 			BNewProject box = new BNewProject(stage);
 			box.sizeToScene();
@@ -325,6 +346,18 @@ public class Main extends Application {
 					// Not Support!
 					break;
 				}
+			}
+			container.setDisable(false);
+		});
+
+		menu.export.setOnAction(e -> {
+			BExport box = new BExport(stage);
+			box.sizeToScene();
+			container.setDisable(true);
+			box.setAlwaysOnTop(true);
+			box.showAndWait();
+			if (box.condition.equals("finish")) {
+
 			}
 			container.setDisable(false);
 		});
@@ -366,6 +399,8 @@ public class Main extends Application {
 
 		System.out.println("Copy.xml File Loading...");
 		copyxml = new CopyXML();
+
+		UCobjects = new ArrayList<Object>();
 	}
 
 	public static void main(String[] args) {

@@ -93,19 +93,6 @@ public class CopyXML {
 		System.out.print("#Success Copy");
 	}
 
-	public String getDiagram() {
-		buildCopyXML();
-		String ws = null;
-		nList = document.getElementsByTagName("diagram");
-		for (int temp = 0; temp < nList.getLength(); temp++) {
-			Node nNode = nList.item(temp);
-			if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-				ws = nNode.getTextContent();
-			}
-		}
-		return ws;
-	
-	}
 
 	public void save() {
 		try {

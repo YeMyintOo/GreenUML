@@ -23,6 +23,7 @@ public class MenusLib {
 	public DocumentBuilder dBuilder;
 	public Document doc;
 	public final KeyCombination pasteKey;
+	public final KeyCombination saveKey;
 
 	public MenuItem nProject; // New Project
 	public MenuItem oProject; // Open Project
@@ -64,14 +65,19 @@ public class MenusLib {
 	public Fonts Fonts;
 
 	// UseCase
-	
+
 	public boolean isUCRelation;
 	public boolean isUCGeneral;
 	public boolean isUCInclude;
 	public boolean isUCExtend;
 
+	public boolean isActivation;
+	public boolean isNActivation;
+	public boolean isDActivation;
+	
 	public MenusLib() {
 		pasteKey = new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_ANY);
+		saveKey = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
 
 		bar = new MenuBar();
 		file = new Menu("File");

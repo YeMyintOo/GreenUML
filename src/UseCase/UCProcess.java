@@ -108,7 +108,6 @@ public class UCProcess extends Ellipse {
 		});
 
 		owner.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-
 			@Override
 			public void handle(KeyEvent key) {
 				if (isHover()) {

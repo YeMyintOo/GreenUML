@@ -28,7 +28,7 @@ public class BNewDiagram extends Stage {
 
 	public TextField nameF;// Name for Diagram
 	private Label isnamed; // Already name?
-	private ComboBox projectCB;// Project ComboBox
+	private ComboBox<String> projectCB;// Project ComboBox
 	private String[] projects;
 	// private Button pathB;
 
@@ -71,7 +71,7 @@ public class BNewDiagram extends Stage {
 		isnamed = new Label();
 		p1.addRow(0, nameL, nameF, isnamed); // Add Components in Row 0
 
-		projectCB = new ComboBox<>();
+		projectCB = new ComboBox<String>();
 		projectCB.setPrefWidth(200);
 		projectCB.getItems().addAll(projects);
 		Label projL = new Label("Project");
@@ -129,11 +129,18 @@ public class BNewDiagram extends Stage {
 		});
 
 		okB.setOnAction(e -> {
-			if (!nameF.getText().equals("") && projectCB.getSelectionModel().getSelectedIndex()!=-1) {
-				setFileName(nameF.getText());
-				diagram = calculateType();
-				condition = "finish";
-				close();
+			if (!nameF.getText().equals("")) {
+				nameF.setStyle("-fx-text-box-border:green");
+				if (projectCB.getSelectionModel().getSelectedIndex() != -1) {
+					setFileName(nameF.getText());
+					diagram = calculateType();
+					condition = "finish";
+					close();
+				} else {
+					projectCB.setStyle("-fx-background-color:red");
+				}
+			} else {
+				nameF.setStyle("-fx-text-box-border:red");
 			}
 		});
 

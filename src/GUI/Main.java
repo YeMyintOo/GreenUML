@@ -2,7 +2,6 @@ package GUI;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -10,11 +9,20 @@ import Boxs.BExport;
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
 import Boxs.BOpen;
+import ClassD.ClassAbstract;
+import ClassD.ClassD;
+import ClassD.ClassDataBox;
+import ClassD.ClassFunBox;
+import ClassD.ClassInterface;
 import GTool.GLabel;
 import Hardware.Screen;
 import Libraries.MenusLib;
 import Libraries.OS;
 import Libraries.Tool;
+import Sequence.SEActivation;
+import Sequence.SEDActivation;
+import Sequence.SENActivation;
+import Sequence.SERole;
 import UseCase.UCActor;
 import UseCase.UCBoundary;
 import UseCase.UCExtend;
@@ -23,6 +31,7 @@ import UseCase.UCInclude;
 import UseCase.UCProcess;
 import UseCase.UCRelation;
 import XMLFactory.CopyXML;
+import XMLFactory.UCXml;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,6 +47,11 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -54,11 +68,15 @@ public class Main extends Application {
 	File folder; // Temp Diagrams Folder
 
 	// UseCase
-	public ArrayList<Object> UCobjects;
+
 	UCRelation ucrelation;
 	UCGeneral ucgeneral;
 	UCInclude ucinclude;
 	UCExtend ucextend;
+
+	SEActivation seactivation;
+	SENActivation senactivation;
+	SEDActivation sedactivation;
 
 	@Override
 	public void start(Stage stage) throws Exception {
@@ -101,7 +119,7 @@ public class Main extends Application {
 			@Override
 			public void handle(KeyEvent key) {
 				if (menu.pasteKey.match(key)) {
-					System.out.println("Paste");
+					System.out.println("#Paste");
 					menu.dbFactory = DocumentBuilderFactory.newInstance();
 					try {
 						menu.dBuilder = menu.dbFactory.newDocumentBuilder();
@@ -125,14 +143,16 @@ public class Main extends Application {
 							process.data.set(text);
 							process.label.layoutXProperty().bind(process.centerXProperty()
 									.subtract(process.label.layoutBoundsProperty().getValue().getWidth() / 2));
-
+							Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
 							draw.getArea().getChildren().addAll(process, process.getLabel(), process.getText(false));
-
+							draw.objects.add(process);
 							break;
 						}
 					} catch (Exception e) {
 
 					}
+				} else if (menu.saveKey.match(key)) {
+					menu.save.fire();
 				}
 			}
 		});
@@ -149,49 +169,293 @@ public class Main extends Application {
 						public void handle(MouseEvent e) {
 							Object obj = e.getTarget();
 							Color color = Color.web(menu.cpikcer.getValue().toString());
+
 							// New Draw
 							if (obj instanceof Pane || (obj instanceof UCBoundary && draw.getCTool() != Tool.POINTER
 									&& draw.getCTool() != Tool.UCBOUNDARY)) {
-								if (draw.getCTool() == Tool.GLabel) {
+								switch (draw.getCTool()) {
+								case GLabel:
 									GLabel label = new GLabel(e.getX(), e.getY(), menu.Fonts.fonts);
 									draw.getArea().getChildren().addAll(label, label.getText(false),
 											label.getTool(false));
-								} else if (draw.getCTool() == Tool.UCPROCESS) {
+									break;
+								case UCPROCESS:
 									UCProcess process = new UCProcess(stage, e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(process, process.getLabel(),
 											process.getText(false));
-									UCobjects.add(process);
-								} else if (draw.getCTool() == Tool.UCACTOR) {
+									draw.objects.add(process);
+									break;
+								case UCACTOR:
 									UCActor actor = new UCActor(e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(),
 											actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
 											actor.getText(false));
-								} else if (draw.getCTool() == Tool.UCREALATION) {
+									break;
+								case UCREALATION:
 									ucrelation = new UCRelation(e.getX(), e.getY(), e.getX(), e.getY());
 									draw.getArea().getChildren().addAll(ucrelation);
 									menu.isUCRelation = true;
-								} else if (draw.getCTool() == Tool.UCGENERAL) {
+									break;
+								case UCGENERAL:
 									ucgeneral = new UCGeneral(e.getX(), e.getY(), e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(ucgeneral);
 									menu.isUCGeneral = true;
-								} else if (draw.getCTool() == Tool.UCBOUNDARY) {
+									break;
+								case UCBOUNDARY:
 									UCBoundary ucboundary = new UCBoundary(e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(ucboundary);
 									ucboundary.toBack();
-								} else if (draw.getCTool() == Tool.UCINCLUDE) {
+									break;
+								case UCINCLUDE:
 									ucinclude = new UCInclude(e.getX(), e.getY(), e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(ucinclude);
 									menu.isUCInclude = true;
-								} else if (draw.getCTool() == Tool.UCEXTEND) {
+									break;
+								case UCEXTEND:
 									ucextend = new UCExtend(e.getX(), e.getY(), e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(ucextend);
 									menu.isUCExtend = true;
-								}
-								draw.setCTool(Tool.POINTER); // Null
-							}
+									break;
+								case SEROLE:
+									SERole role = new SERole(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(role, role.label, role.line,
+											role.getText(false));
+									role.line.toBack();
+									break;
+								case SEACTIVATION:
+									seactivation = new SEActivation(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(seactivation);
+									menu.isActivation = true;
+									break;
+								case SENEWACTIVATION:
+									senactivation = new SENActivation(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(senactivation);
+									menu.isNActivation = true;
+									break;
+								case SEDESTROYACTIVATION:
+									sedactivation = new SEDActivation(e.getX(), e.getY(), e.getX(), e.getY());
+									draw.getArea().getChildren().addAll(sedactivation);
+									menu.isDActivation = true;
+									break;
+								case CLASS:
+									ClassD classd = new ClassD(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(classd, classd.dataBox, classd.funBox,
+											classd.label, classd.getText(false), classd.resizeB);
+									// classd.resizeB.toBack();
+									classd.dataBox.addEventFilter(MouseEvent.MOUSE_CLICKED,
+											new EventHandler<MouseEvent>() {
+												@Override
+												public void handle(MouseEvent e) {
+													ClassDataBox box = new ClassDataBox(stage);
+													box.sizeToScene();
+													container.setDisable(true);
+													box.setAlwaysOnTop(true);
+													box.showAndWait();
+													if (box.condition.equals("create")) {
+														classd.addData(box.label);
+														Text data = new Text();
+														if (box.isStatic) {
+															data.setUnderline(true);
+														}
+														// TextFlow
+														// flow=coloredClassDataLabel(box.label);
 
-							// Color Case
-							if (scene.getCursor() == Cursor.HAND) {
+														int size = classd.getDatas().size();
+														data.textProperty()
+																.bindBidirectional(classd.getDatas().get(--size));
+														data.setLayoutX(classd.dataBox.getX() + 10);
+														data.setLayoutY(
+																classd.dataBox.getY() + classd.dataBox.getHeight());
+
+														data.layoutXProperty().bind(classd.dataBox.xProperty().add(10));
+														data.layoutYProperty().bind(classd.dataBox.yProperty()
+																.add(classd.dataBox.getHeight()));
+
+														classd.dataBox.setHeight(classd.dataBox.getHeight() + 20);
+
+														if ((data.layoutBoundsProperty().getValue().getWidth()
+																+ 10) >= classd.dataBox.getWidth()) {
+															classd.dataBox.setWidth(
+																	data.layoutBoundsProperty().getValue().getWidth()
+																			+ 30);
+														}
+														draw.getArea().getChildren().add(data);
+													}
+													container.setDisable(false);
+												}
+											});
+									classd.funBox.addEventFilter(MouseEvent.MOUSE_CLICKED,
+											new EventHandler<MouseEvent>() {
+												@Override
+												public void handle(MouseEvent e) {
+													ClassFunBox box = new ClassFunBox(stage);
+													box.sizeToScene();
+													container.setDisable(true);
+													box.setAlwaysOnTop(true);
+													box.showAndWait();
+													if (box.condition.equals("create")) {
+														classd.addFunction(box.label);
+														Text data = new Text();
+														int size = classd.getFunctions().size();
+														data.textProperty()
+																.bindBidirectional(classd.getFunctions().get(--size));
+														data.setLayoutX(classd.funBox.getX() + 10);
+														data.setLayoutY(
+																classd.funBox.getY() + classd.funBox.getHeight());
+
+														data.layoutXProperty().bind(classd.funBox.xProperty().add(10));
+														data.layoutYProperty().bind(classd.funBox.yProperty()
+																.add(classd.funBox.getHeight()));
+
+														classd.funBox.setHeight(classd.funBox.getHeight() + 20);
+
+														if ((data.layoutBoundsProperty().getValue().getWidth()
+																+ 10) >= classd.funBox.getWidth()) {
+															classd.funBox.setWidth(
+																	data.layoutBoundsProperty().getValue().getWidth()
+																			+ 30);
+														}
+														draw.getArea().getChildren().add(data);
+													}
+													container.setDisable(false);
+												}
+											});
+
+									break;
+								case CABSTRACT:
+									ClassAbstract cabstract = new ClassAbstract(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(cabstract, cabstract.funBox, cabstract.label,
+											cabstract.getText(false), cabstract.resizeB);
+									cabstract.funBox.addEventFilter(MouseEvent.MOUSE_CLICKED,
+											new EventHandler<MouseEvent>() {
+												@Override
+												public void handle(MouseEvent e) {
+													ClassFunBox box = new ClassFunBox(stage);
+													box.sizeToScene();
+													container.setDisable(true);
+													box.setAlwaysOnTop(true);
+													box.showAndWait();
+													if (box.condition.equals("create")) {
+														cabstract.addFunction(box.label);
+														Text data = new Text();
+														data.setFont(Font.font("Arial", FontWeight.NORMAL,
+																FontPosture.ITALIC, 13));
+														int size = cabstract.getFunctions().size();
+														data.textProperty().bindBidirectional(
+																cabstract.getFunctions().get(--size));
+														data.setLayoutX(cabstract.funBox.getX() + 10);
+														data.setLayoutY(
+																cabstract.funBox.getY() + cabstract.funBox.getHeight());
+
+														data.layoutXProperty()
+																.bind(cabstract.funBox.xProperty().add(10));
+														data.layoutYProperty().bind(cabstract.funBox.yProperty()
+																.add(cabstract.funBox.getHeight()));
+
+														cabstract.funBox.setHeight(cabstract.funBox.getHeight() + 20);
+
+														if ((data.layoutBoundsProperty().getValue().getWidth()
+																+ 10) >= cabstract.funBox.getWidth()) {
+															cabstract.funBox.setWidth(
+																	data.layoutBoundsProperty().getValue().getWidth()
+																			+ 30);
+														}
+														draw.getArea().getChildren().add(data);
+													}
+													container.setDisable(false);
+												}
+											});
+									break;
+								case CINTERFACE:
+									ClassInterface inter = new ClassInterface(e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(inter, inter.head, inter.dataBox, inter.funBox,
+											inter.label, inter.getText(false), inter.resizeB);
+									inter.dataBox.addEventFilter(MouseEvent.MOUSE_CLICKED,
+											new EventHandler<MouseEvent>() {
+												@Override
+												public void handle(MouseEvent e) {
+													ClassDataBox box = new ClassDataBox(stage);
+													box.sizeToScene();
+													container.setDisable(true);
+													box.setAlwaysOnTop(true);
+													box.showAndWait();
+													if (box.condition.equals("create")) {
+														inter.addData(box.label);
+														Text data = new Text();
+														if (box.isStatic) {
+															data.setUnderline(true);
+														}
+														// TextFlow
+														// flow=coloredClassDataLabel(box.label);
+
+														int size = inter.getDatas().size();
+														data.textProperty()
+																.bindBidirectional(inter.getDatas().get(--size));
+														data.setLayoutX(inter.dataBox.getX() + 10);
+														data.setLayoutY(
+																inter.dataBox.getY() + inter.dataBox.getHeight());
+
+														data.layoutXProperty().bind(inter.dataBox.xProperty().add(10));
+														data.layoutYProperty().bind(inter.dataBox.yProperty()
+																.add(inter.dataBox.getHeight()));
+
+														inter.dataBox.setHeight(inter.dataBox.getHeight() + 20);
+
+														if ((data.layoutBoundsProperty().getValue().getWidth()
+																+ 10) >= inter.dataBox.getWidth()) {
+															inter.dataBox.setWidth(
+																	data.layoutBoundsProperty().getValue().getWidth()
+																			+ 30);
+														}
+														draw.getArea().getChildren().add(data);
+													}
+													container.setDisable(false);
+												}
+											});
+									inter.funBox.addEventFilter(MouseEvent.MOUSE_CLICKED,
+											new EventHandler<MouseEvent>() {
+												@Override
+												public void handle(MouseEvent e) {
+													ClassFunBox box = new ClassFunBox(stage);
+													box.sizeToScene();
+													container.setDisable(true);
+													box.setAlwaysOnTop(true);
+													box.showAndWait();
+													if (box.condition.equals("create")) {
+														inter.addFunction(box.label);
+														Text data = new Text();
+														int size = inter.getFunctions().size();
+														data.textProperty()
+																.bindBidirectional(inter.getFunctions().get(--size));
+														data.setLayoutX(inter.funBox.getX() + 10);
+														data.setLayoutY(inter.funBox.getY() + inter.funBox.getHeight());
+
+														data.layoutXProperty().bind(inter.funBox.xProperty().add(10));
+														data.layoutYProperty().bind(
+																inter.funBox.yProperty().add(inter.funBox.getHeight()));
+
+														inter.funBox.setHeight(inter.funBox.getHeight() + 20);
+
+														if ((data.layoutBoundsProperty().getValue().getWidth()
+																+ 10) >= inter.funBox.getWidth()) {
+															inter.funBox.setWidth(
+																	data.layoutBoundsProperty().getValue().getWidth()
+																			+ 30);
+														}
+														draw.getArea().getChildren().add(data);
+													}
+													container.setDisable(false);
+												}
+											});
+									break;
+								default:
+									break;
+
+								}
+								draw.setCTool(Tool.POINTER);
+
+							} else if (scene.getCursor() == Cursor.HAND) {
+
 								if (obj instanceof UCProcess) {
 									UCProcess ucprocess = (UCProcess) obj;
 									ucprocess.setFill(color);
@@ -201,11 +465,12 @@ public class Main extends Application {
 								} else if (obj instanceof UCBoundary) {
 									UCBoundary boundary = (UCBoundary) obj;
 									boundary.setFill(color);
+								} else if (obj instanceof SERole) {
+									SERole role = (SERole) obj;
+									role.setFill(color);
 								}
-							} else
 
-							// Delete Case
-							if (scene.getCursor() == Cursor.CROSSHAIR) {
+							} else if (scene.getCursor() == Cursor.CROSSHAIR) {
 								if (obj instanceof GLabel) {
 									GLabel label = (GLabel) obj;
 									draw.getArea().getChildren().removeAll(label, label.getText(false),
@@ -214,6 +479,7 @@ public class Main extends Application {
 									UCProcess ucprocess = (UCProcess) obj;
 									draw.getArea().getChildren().removeAll(ucprocess, ucprocess.getLabel(),
 											ucprocess.getText(false));
+
 								} else if (obj instanceof UCActor) {
 									UCActor actor = (UCActor) obj;
 									draw.getArea().getChildren().removeAll(actor, actor.getBody(), actor.getLeg(),
@@ -245,6 +511,15 @@ public class Main extends Application {
 							} else if (menu.isUCExtend) {
 								ucextend.setEndX(e.getX());
 								ucextend.setEndY(e.getY());
+							} else if (menu.isActivation) {
+								seactivation.setEndX(e.getX());
+								seactivation.setEndY(e.getY());
+							} else if (menu.isNActivation) {
+								senactivation.setEndX(e.getX());
+								senactivation.setEndY(e.getY());
+							} else if (menu.isDActivation) {
+								sedactivation.setEndX(e.getX());
+								sedactivation.setEndY(e.getY());
 							}
 
 						}
@@ -283,9 +558,35 @@ public class Main extends Application {
 								ucextend.update();
 								draw.getArea().getChildren().addAll(ucextend.getSnode(), ucextend.getEnode(),
 										ucextend.top, ucextend.label);
-
 								menu.isUCExtend = false;
 								ucextend = null;
+							} else if (menu.isActivation) {
+								if (seactivation.getStartX() < seactivation.getEndX()) {
+									draw.getArea().getChildren().addAll(seactivation.top, seactivation.bot,
+											seactivation.activate, seactivation.rLine, seactivation.rtop,
+											seactivation.rbot, seactivation.msg, seactivation.snode,
+											seactivation.getText(false));
+									seactivation.snode.toBack();
+								}
+								menu.isActivation = false;
+								seactivation = null;
+							} else if (menu.isNActivation) {
+								if (senactivation.getStartX() < senactivation.getEndX()) {
+									draw.getArea().getChildren().addAll(senactivation.top, senactivation.bot,
+											senactivation.newOb, senactivation.nLine, senactivation.label,
+											senactivation.lifeB, senactivation.rLine, senactivation.rtop,
+											senactivation.rbot, senactivation.getText(false));
+									menu.isNActivation = false;
+									senactivation = null;
+								}
+							} else if (menu.isDActivation) {
+								if (sedactivation.getStartX() < sedactivation.getEndX()) {
+									draw.getArea().getChildren().addAll(sedactivation.top, sedactivation.bot,
+											sedactivation.c1, sedactivation.c2, sedactivation.enode);
+									sedactivation.enode.toBack();
+									menu.isDActivation = false;
+									sedactivation = null;
+								}
 							}
 						}
 					});
@@ -362,8 +663,26 @@ public class Main extends Application {
 			container.setDisable(false);
 		});
 
-		///////////////////////////// .
+		menu.save.setOnAction(e -> {
+			// menu.saveB.fire();
+		});
 
+		menu.saveB.setOnAction(e -> {
+			if (!tabPane.getSelectionModel().isEmpty()) {
+				Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+				String file = tabPane.getSelectionModel().getSelectedItem().getText();
+				switch (draw.diagram) {
+				case 1:
+					try {
+						UCXml xml = new UCXml("Diagrams/" + draw.projectName + "/" + file + ".xml");
+						xml.add(draw.objects);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					break;
+				}
+			}
+		});
 	}
 
 	public void initState() throws IOException {
@@ -400,7 +719,6 @@ public class Main extends Application {
 		System.out.println("Copy.xml File Loading...");
 		copyxml = new CopyXML();
 
-		UCobjects = new ArrayList<Object>();
 	}
 
 	public static void main(String[] args) {
@@ -421,11 +739,10 @@ public class Main extends Application {
 				if (!file.exists()) {
 					if (file.createNewFile()) {
 						System.out.println("File @" + name + " is created!");
-						draw = new Draw(scene, diagram);
+						draw = new Draw(scene, diagram, folder);
 						tab.setContent(draw);
 						tab.setText(name);
 						tabPane.getTabs().add(tab);
-
 					}
 				} else {
 					System.out.println("File already exists.");
@@ -438,6 +755,22 @@ public class Main extends Application {
 		} else {
 			System.out.println("Folder @" + folder + " is missing.");
 		}
+	}
 
+	public TextFlow coloredClassDataLabel(String label) {
+
+		String[] vars = label.split(" ");
+		Text v0 = new Text(vars[0]);
+		v0.setFill(Color.RED);
+		Text v1 = new Text(vars[1]);
+		v1.setFill(Color.BLACK);
+		Text v2 = new Text(vars[2]);
+		v2.setFill(Color.GREEN);
+		Text v3 = new Text(vars[3]);
+		v3.setFill(Color.BLUE);
+
+		TextFlow flow = new TextFlow(v0, v1, v2, v3);
+
+		return flow;
 	}
 }

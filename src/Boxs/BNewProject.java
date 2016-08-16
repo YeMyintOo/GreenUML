@@ -35,7 +35,7 @@ public class BNewProject extends Stage {
 		BorderPane pane = new BorderPane();
 
 		BorderPane infoP = new BorderPane();
-		
+
 		// Name
 		GridPane nameP = new GridPane();
 		nameP.setStyle("-fx-padding: 40 10 0 10;");
@@ -45,7 +45,7 @@ public class BNewProject extends Stage {
 		nameP.addRow(0, nameL, nameF);
 
 		infoP.setCenter(nameP);
-		
+
 		// Button Panel
 		HBox btn = new HBox();
 		okB = new Button("Finish");
@@ -77,9 +77,9 @@ public class BNewProject extends Stage {
 				} catch (Exception ee) {
 					ee.printStackTrace();
 				}
-
+			} else {
+				nameF.setStyle("-fx-text-box-border:red");
 			}
-
 		});
 	}
 

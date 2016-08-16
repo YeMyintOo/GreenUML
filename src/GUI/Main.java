@@ -2,22 +2,28 @@ package GUI;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
+import javafx.geometry.Rectangle2D;
+import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilderFactory;
-
 import Boxs.BExport;
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
 import Boxs.BOpen;
+import Boxs.BPrintPreview;
 import ClassD.ClassAbstract;
 import ClassD.ClassD;
 import ClassD.ClassDataBox;
+import ClassD.ClassDepen;
 import ClassD.ClassFunBox;
 import ClassD.ClassInterface;
+import ClassD.EditClassDataBox;
 import GTool.GLabel;
 import Hardware.Screen;
 import Libraries.MenusLib;
 import Libraries.OS;
+import Libraries.Region;
 import Libraries.Tool;
 import Sequence.SEActivation;
 import Sequence.SEDActivation;
@@ -35,12 +41,18 @@ import XMLFactory.UCXml;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
@@ -66,7 +78,8 @@ public class Main extends Application {
 
 	String osType;
 	File folder; // Temp Diagrams Folder
-
+	File tempPIC;
+	Region region;
 	// UseCase
 
 	UCRelation ucrelation;
@@ -78,16 +91,37 @@ public class Main extends Application {
 	SENActivation senactivation;
 	SEDActivation sedactivation;
 
+	ClassDepen cdepen;
+	Stage stage;
+
 	@Override
 	public void start(Stage stage) throws Exception {
 		initState();
-
+		this.stage = stage;
 		scene = new Scene(container, screen.getWidth(), screen.getHeight());
 		stage.setScene(scene);
 		// stage.setFullScreen(true);
 		stage.setTitle("GreenUML");
 		stage.centerOnScreen();
 		stage.show();
+
+		menu.rSelectB.setOnAction(e -> {
+			scene.setCursor(Cursor.SE_RESIZE);
+		});
+		menu.clean.setOnAction(e -> {
+			clean();
+		});
+		menu.gridLine.setOnAction(e -> {
+			Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+			if (menu.isgBLine) {
+				draw.getArea().getChildren().add(menu.gridPane);
+				menu.gridPane.toBack();
+				menu.isgBLine = false;
+			} else {
+				menu.isgBLine = true;
+				draw.getArea().getChildren().remove(menu.gridPane);
+			}
+		});
 
 		menu.cpointB.setOnAction(e -> {
 			scene.setCursor(Cursor.HAND);
@@ -98,21 +132,8 @@ public class Main extends Application {
 		menu.selectB.setOnAction(e -> {
 			scene.setCursor(Cursor.OPEN_HAND);
 		});
-
-		menu.gHLineB.setOnAction(e -> {
-			tabPane.getSelectionModel().getSelectedItem().getContent().setStyle("-fx-background-color:blue;");
-		});
 		menu.gBLineB.setOnAction(e -> {
-			System.out.println(" Call GridLine ");
-			Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
-			if (menu.isgBLine) {
-				draw.getArea().getChildren().add(menu.gridPane);
-				menu.gridPane.toBack();
-				menu.isgBLine = false;
-			} else {
-				menu.isgBLine = true;
-				draw.getArea().getChildren().remove(menu.gridPane);
-			}
+			menu.gridLine.fire();
 		});
 
 		stage.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
@@ -171,6 +192,15 @@ public class Main extends Application {
 							Color color = Color.web(menu.cpikcer.getValue().toString());
 
 							// New Draw
+							if (obj instanceof Pane && scene.getCursor() == Cursor.SE_RESIZE) {
+								System.out.println("Region Draw");
+								region = new Region();
+								region.setX(e.getX());
+								region.setY(e.getY());
+								draw.getArea().getChildren().addAll(region);
+								menu.isRegionDraw = true;
+							} else
+
 							if (obj instanceof Pane || (obj instanceof UCBoundary && draw.getCTool() != Tool.POINTER
 									&& draw.getCTool() != Tool.UCBOUNDARY)) {
 								switch (draw.getCTool()) {
@@ -270,7 +300,6 @@ public class Main extends Application {
 														data.layoutXProperty().bind(classd.dataBox.xProperty().add(10));
 														data.layoutYProperty().bind(classd.dataBox.yProperty()
 																.add(classd.dataBox.getHeight()));
-
 														classd.dataBox.setHeight(classd.dataBox.getHeight() + 20);
 
 														if ((data.layoutBoundsProperty().getValue().getWidth()
@@ -280,6 +309,30 @@ public class Main extends Application {
 																			+ 30);
 														}
 														draw.getArea().getChildren().add(data);
+
+														data.addEventFilter(MouseEvent.MOUSE_PRESSED,
+																new EventHandler<MouseEvent>() {
+																	@Override
+																	public void handle(MouseEvent e) {
+																		EditClassDataBox box = new EditClassDataBox(
+																				stage, data.getText().trim());
+																		box.sizeToScene();
+																		container.setDisable(true);
+																		box.setAlwaysOnTop(true);
+																		box.showAndWait();
+																		if (box.condition.equals("Delete")) {
+																			draw.getArea().getChildren().remove(data);
+																			// classd.dataBox.setHeight(
+																			// classd.dataBox.getHeight()
+																			// -
+																			// 20);
+																		} else if (box.condition.equals("Update")) {
+																			data.setText("Changed");
+																		}
+																		container.setDisable(false);
+																	}
+																});
+
 													}
 													container.setDisable(false);
 												}
@@ -448,6 +501,11 @@ public class Main extends Application {
 												}
 											});
 									break;
+								case CDEPENDENCY:
+									cdepen = new ClassDepen(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getChildren().add(cdepen);
+									menu.isCDepend = true;
+									break;
 								default:
 									break;
 
@@ -520,8 +578,21 @@ public class Main extends Application {
 							} else if (menu.isDActivation) {
 								sedactivation.setEndX(e.getX());
 								sedactivation.setEndY(e.getY());
-							}
+							} else if (menu.isCDepend) {
+								cdepen.setEndX(e.getX());
+								cdepen.setEndY(e.getY());
+							} else if (menu.isRegionDraw) {
+								if (e.getX() > region.getX() + region.getWidth())
+									region.setWidth(region.getWidth() + 4);
+								else if (e.getX() < region.getX() + region.getWidth())
+									region.setWidth(region.getWidth() - 4);
 
+								if (e.getY() > region.getY() + region.getHeight())
+									region.setHeight(region.getHeight() + 4);
+								else if (e.getY() < region.getY() + region.getHeight())
+									region.setHeight(region.getHeight() - 4);
+
+							}
 						}
 					});
 
@@ -549,7 +620,6 @@ public class Main extends Application {
 								ucinclude.update();
 								draw.getArea().getChildren().addAll(ucinclude.getSnode(), ucinclude.getEnode(),
 										ucinclude.top, ucinclude.label);
-
 								menu.isUCInclude = false;
 								ucinclude = null;
 							} else if (menu.isUCExtend) {
@@ -568,6 +638,7 @@ public class Main extends Application {
 											seactivation.getText(false));
 									seactivation.snode.toBack();
 								}
+
 								menu.isActivation = false;
 								seactivation = null;
 							} else if (menu.isNActivation) {
@@ -587,6 +658,58 @@ public class Main extends Application {
 									menu.isDActivation = false;
 									sedactivation = null;
 								}
+							} else if (menu.isCDepend) {
+								if (cdepen.filterLine()) {
+									draw.getArea().getChildren().addAll(cdepen.l1, cdepen.l2, cdepen.l3, cdepen.node1,
+											cdepen.node2, cdepen.startNode, cdepen.endNode, cdepen.top, cdepen.bot);
+								}
+								cdepen.l1.toFront();
+								cdepen.l2.toFront();
+								cdepen.l3.toFront();
+								cdepen = null;
+								menu.isCDepend = false;
+							} else if (menu.isRegionDraw) {
+								// region.accessibleHelpProperty()
+
+								VBox priceBox = new VBox();
+								Button printB = new Button("P");
+								priceBox.getChildren().addAll(printB);
+								priceBox.layoutXProperty().bind(region.xProperty().add(region.getWidth()));
+								priceBox.layoutYProperty()
+										.bind(region.yProperty().add(region.getHeight()).subtract(50));
+								draw.getArea().getChildren().addAll(priceBox);
+
+								container.setDisable(false);
+								menu.isRegionDraw = false;
+
+								printB.setOnAction(e2 -> {
+									// draw.getArea().getChildren().removeAll(priceBox);
+									String picName = null;
+									try {
+										SnapshotParameters parameters = new SnapshotParameters();
+										Rectangle2D toPaint = new Rectangle2D(region.getX(), region.getY(),
+												region.getWidth(), region.getHeight());
+										parameters.setViewport(toPaint);
+										picName = "" + System.currentTimeMillis();
+										WritableImage snapshot = draw.getArea().snapshot(parameters, null);
+										File output = new File("ImgTemp/" + picName + ".png");
+										ImageIO.write(SwingFXUtils.fromFXImage(snapshot, null), "png", output);
+									} catch (IOException ex) {
+
+									}
+
+									regionPrint();
+
+									// Show Preview Print
+									BPrintPreview preview = new BPrintPreview(stage, picName);
+									preview.sizeToScene();
+									container.setDisable(true);
+									preview.setAlwaysOnTop(true);
+									preview.showAndWait();
+									draw.getArea().getChildren().removeAll(priceBox, region);
+									region = null;
+								});
+
 							}
 						}
 					});
@@ -618,8 +741,9 @@ public class Main extends Application {
 			container.setDisable(true);
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
-			if (box.condition.equals("finish")) {
-
+			if (box.condition.equals("open")) {
+				container.setCenter(tabPane);
+				addOldTab(box.files, box.projectName);
 			}
 			container.setDisable(false);
 		});
@@ -631,7 +755,6 @@ public class Main extends Application {
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
 			if (box.getValue().equals("finish")) {
-				// Create Project Folder
 				File file = null;
 				switch (osType) {
 				case "Unix":
@@ -641,6 +764,12 @@ public class Main extends Application {
 						System.out.println("Folder @" + box.nameF.getText().toString() + " is created!");
 					} else {
 						System.out.println("Folder already exists.");
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setTitle("Alert!");
+						alert.setHeaderText("Project Folder is Alreay exists.");
+						alert.setContentText("Ooops, that is error");
+						alert.showAndWait();
+						openNewProjectBox();
 					}
 					break;
 				case "Windows":
@@ -716,6 +845,14 @@ public class Main extends Application {
 			System.out.println("Diagram Folder is already exists");
 		}
 
+		tempPIC = new File("ImgTemp");
+		if (!tempPIC.exists()) {
+			tempPIC.mkdir();
+			System.out.println("Temp Photo Folder is created");
+		} else {
+			System.out.println("Temp Photo Folder is already exists");
+		}
+
 		System.out.println("Copy.xml File Loading...");
 		copyxml = new CopyXML();
 
@@ -746,6 +883,12 @@ public class Main extends Application {
 					}
 				} else {
 					System.out.println("File already exists.");
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setTitle("Alert!");
+					alert.setHeaderText("File Alreay exists.");
+					alert.setContentText("Ooops, there was an error!");
+					alert.showAndWait();
+					menu.nFile.fire();
 				}
 				break;
 			case "Windows":
@@ -757,20 +900,45 @@ public class Main extends Application {
 		}
 	}
 
-	public TextFlow coloredClassDataLabel(String label) {
+	public void addOldTab(ArrayList<String> files, String folder) {
+		for (int i = 0; i < files.size(); i++) {
+			String name = files.get(i).substring(0, files.get(i).indexOf("."));
+			File file = new File("Diagrams/" + folder + "/" + name + ".xml");
+			Tab tab = new Tab();
+			switch (osType) {
+			case "Unix":
+				if (file.exists()) {
+					System.out.println("File @" + name + " is loading...!");
+					draw = new Draw(scene, 1, folder);
+					tab.setContent(draw);
+					tab.setText(name);
+					tabPane.getTabs().add(tab);
+				}
+				break;
+			case "Windows":
+				// Not Support!
+				break;
+			}
+		}
 
-		String[] vars = label.split(" ");
-		Text v0 = new Text(vars[0]);
-		v0.setFill(Color.RED);
-		Text v1 = new Text(vars[1]);
-		v1.setFill(Color.BLACK);
-		Text v2 = new Text(vars[2]);
-		v2.setFill(Color.GREEN);
-		Text v3 = new Text(vars[3]);
-		v3.setFill(Color.BLUE);
-
-		TextFlow flow = new TextFlow(v0, v1, v2, v3);
-
-		return flow;
 	}
+
+	public void regionPrint() {
+		for (Object obj : draw.objects) {
+			UCProcess var = (UCProcess) obj;
+			System.out.println(" Intersects " + region.intersects(var.getBoundsInLocal()));
+		}
+	}
+
+	// Clean Temp Photo
+	public void clean() {
+		for (File file : tempPIC.listFiles()) {
+			file.delete();
+		}
+	}
+
+	public void openNewProjectBox() {
+		menu.nProject.fire();
+	}
+
 }

@@ -38,7 +38,8 @@ public class BOpen extends Stage {
 	BorderPane file;
 	Label fileL;
 	ListView<CheckBox> flist;
-	ArrayList<String> files; // Real
+	public ArrayList<String> files; // Real
+	public String projectName;
 
 	private Button okB;
 	private Button closeB;
@@ -92,9 +93,9 @@ public class BOpen extends Stage {
 		// Button Panel
 		HBox btn = new HBox();
 		okB = new Button("Open");
-		closeB = new Button("Cancel");
+		closeB = new Button("Close");
 		resetB = new Button("Reset");
-		btn.getChildren().addAll(resetB,closeB, okB);
+		btn.getChildren().addAll(resetB, closeB, okB);
 		btn.setSpacing(4);
 		btn.setStyle("-fx-padding:10 10 10 10;" + "-fx-background-color:rgb(220,220,220);" + "-fx-cursor: hand;");
 		btn.setAlignment(Pos.BASELINE_RIGHT);
@@ -107,9 +108,20 @@ public class BOpen extends Stage {
 		setScene(scene);
 
 		addB.setOnAction(e -> {
-			System.out.println("Selected Project :" + list.getSelectionModel().getSelectedItem().toString());
+			projectName = list.getSelectionModel().getSelectedItem().toString();
 			loadFiles(list.getSelectionModel().getSelectedItem().toString());
 		});
+
+		okB.setOnAction(e -> {
+			
+			condition = "open";
+			close();
+		});
+
+		closeB.setOnAction(e -> {
+			close();
+		});
+
 	}
 
 	public void loadProjects() {
@@ -127,10 +139,10 @@ public class BOpen extends Stage {
 		File path = new File("Diagrams/" + project);
 		File[] dfiles = path.listFiles();
 		for (int i = 0; i < dfiles.length; i++) {
-			FileCheckBox cb = new FileCheckBox(dfiles[i].getName());
+			String name = dfiles[i].getName().substring(0, dfiles[i].getName().indexOf("."));
+			FileCheckBox cb = new FileCheckBox(name);
 			int index = i;
 			cb.setOnAction(e -> {
-				System.out.println("isCheck :" + cb.isSelected());
 				if (cb.isSelected()) {
 					files.add(dfiles[index].getName());
 				} else {

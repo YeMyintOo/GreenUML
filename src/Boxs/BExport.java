@@ -2,6 +2,7 @@ package Boxs;
 
 import java.io.File;
 
+import Libraries.Pack;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -27,6 +28,7 @@ public class BExport extends Stage {
 
 	private Button okB;
 	private Button closeB;
+	private Pack pack;
 
 	public BExport(Stage owner) {
 		super();
@@ -52,7 +54,7 @@ public class BExport extends Stage {
 		HBox btn = new HBox();
 		okB = new Button("Export");
 		closeB = new Button("Close");
-		btn.getChildren().addAll(closeB,okB);
+		btn.getChildren().addAll(closeB, okB);
 		btn.setSpacing(4);
 		btn.setStyle("-fx-padding:10 20 10 10;" + "-fx-background-color:rgb(220,220,220);" + "-fx-cursor: hand;");
 		btn.setAlignment(Pos.BASELINE_RIGHT);
@@ -62,6 +64,13 @@ public class BExport extends Stage {
 
 		Scene scene = new Scene(root, 300, 400, Color.WHITE);
 		setScene(scene);
+
+		okB.setOnAction(e -> {
+			pack = new Pack();
+		});
+		closeB.setOnAction(e -> {
+
+		});
 	}
 
 	public void loadProjects() {

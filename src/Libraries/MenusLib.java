@@ -28,6 +28,7 @@ public class MenusLib {
 	public MenuItem nProject; // New Project
 	public MenuItem oProject; // Open Project
 	public MenuItem export; //
+	public MenuItem importD;
 	public MenuItem nFile; // New File
 	public MenuItem oFile;// Open File
 	public MenuItem save; // Save
@@ -35,14 +36,15 @@ public class MenusLib {
 
 	public MenuItem copy; // Copy
 	public MenuItem paste;// Paste
-	public MenuItem cut; // Cut
-	public MenuItem select; // Select
-	public MenuItem selectAll; // Select All
 	public MenuItem delete; // Delete
+
+	public MenuItem clean;
+	public MenuItem gridLine;
 
 	public MenuBar bar;
 	public Menu file;
 	public Menu edit;
+	public Menu project;
 
 	public HBox sbar;
 	public Button saveB;
@@ -63,6 +65,7 @@ public class MenusLib {
 
 	// System
 	public Fonts Fonts;
+	public boolean isRegionDraw;
 
 	// UseCase
 
@@ -74,7 +77,9 @@ public class MenusLib {
 	public boolean isActivation;
 	public boolean isNActivation;
 	public boolean isDActivation;
-	
+
+	public boolean isCDepend;
+
 	public MenusLib() {
 		pasteKey = new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_ANY);
 		saveKey = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
@@ -82,24 +87,27 @@ public class MenusLib {
 		bar = new MenuBar();
 		file = new Menu("File");
 		edit = new Menu("Edit");
+		project = new Menu("Project");
 
 		nProject = new MenuItem("New Project");
 		nFile = new MenuItem("New Diagram");
 		oProject = new MenuItem("Open..");
 		export = new MenuItem("Export..");
+		importD = new MenuItem("Import..");
 		save = new MenuItem("Save");
 		exit = new MenuItem("Exit");
-		file.getItems().addAll(nProject, nFile, oProject, export, save, exit);
+		file.getItems().addAll(nProject, nFile, oProject, export, importD, save, exit);
 
 		copy = new MenuItem("Copy");
 		paste = new MenuItem("Paste");
-		// cut = new MenuItem("Cut");
-		// select = new MenuItem("Select");
-		// selectAll = new MenuItem("Select All");
 		delete = new MenuItem("Delete");
 		edit.getItems().addAll(copy, paste, delete);
 
-		bar.getMenus().addAll(file, edit);
+		clean = new MenuItem("Clean");
+		gridLine = new MenuItem("GridLine");
+		project.getItems().addAll(clean, gridLine);
+
+		bar.getMenus().addAll(file, edit, project);
 
 		// Tool
 		sbar = new HBox();
@@ -112,12 +120,11 @@ public class MenusLib {
 		selectB = new Button("Select");
 		saveB = new Button("Save");
 		printB = new Button("Print");
-		gHLineB = new Button("GuideLine (Horizontal)");
-		gVLineB = new Button("GuideLine (Vertical)");
+		// gHLineB = new Button("GuideLine (Horizontal)");
+		// gVLineB = new Button("GuideLine (Vertical)");
 		gBLineB = new Button("GridLine");
 		rSelectB = new Button("Region Select");
-		sbar.getChildren().addAll(pointB, cpointB, cpikcer, selectB, deleteB, saveB, printB, gHLineB, gVLineB, gBLineB,
-				rSelectB);
+		sbar.getChildren().addAll(pointB, cpointB, cpikcer, selectB, deleteB, saveB, printB, gBLineB, rSelectB);
 
 		Fonts = new Fonts();
 

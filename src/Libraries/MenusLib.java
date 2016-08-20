@@ -16,6 +16,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
 
 public class MenusLib {
 
@@ -66,7 +67,7 @@ public class MenusLib {
 	// System
 	public Fonts Fonts;
 	public boolean isRegionDraw;
-
+	public FileChooser fileChoose;
 	// UseCase
 
 	public boolean isUCRelation;
@@ -83,6 +84,9 @@ public class MenusLib {
 	public MenusLib() {
 		pasteKey = new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_ANY);
 		saveKey = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
+
+		fileChoose = new FileChooser();
+		fileChoose.setTitle("Import UML Package");
 
 		bar = new MenuBar();
 		file = new Menu("File");

@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javafx.geometry.Rectangle2D;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import Boxs.BExport;
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
@@ -23,6 +23,7 @@ import GTool.GLabel;
 import Hardware.Screen;
 import Libraries.MenusLib;
 import Libraries.OS;
+import Libraries.Pack;
 import Libraries.Region;
 import Libraries.Tool;
 import Sequence.SEActivation;
@@ -43,6 +44,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Cursor;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
@@ -63,7 +65,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -75,6 +76,7 @@ public class Main extends Application {
 	TabPane tabPane;
 	Draw draw;
 	CopyXML copyxml;
+	File iFile;
 
 	String osType;
 	File folder; // Temp Diagrams Folder
@@ -603,7 +605,8 @@ public class Main extends Application {
 							if (menu.isUCRelation) {
 								ucrelation.setEndX(e.getX());
 								ucrelation.setEndY(e.getY());
-								draw.getArea().getChildren().addAll(ucrelation.getSnode(), ucrelation.getEnode());
+								draw.getArea().getChildren().addAll(ucrelation.snode, ucrelation.enode,
+										ucrelation.mnode);
 								menu.isUCRelation = false;
 								ucrelation = null;
 							} else if (menu.isUCGeneral) {
@@ -792,6 +795,32 @@ public class Main extends Application {
 			container.setDisable(false);
 		});
 
+		menu.importD.setOnAction(e -> {
+			iFile = menu.fileChoose.showOpenDialog(stage);
+			String format = iFile.getName().substring(iFile.getName().indexOf(".") + 1, iFile.getName().length());
+			String name = iFile.getName().substring(0, iFile.getName().indexOf("."));
+			System.out.println(" Name :" + name);
+			if (format.equals("uml")) {
+				if (!isPacked(name)) {
+					Pack pack = new Pack();
+					pack.doUnPack(iFile.getPath(), name);
+				} else {
+					Alert alert = new Alert(AlertType.ERROR);
+					alert.setTitle("Error");
+					alert.setHeaderText("Project Package Already Exists");
+					alert.setContentText("Rename project package .");
+					alert.show();
+				}
+
+			} else {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Fomart Error!");
+				alert.setHeaderText("UML Diagram");
+				alert.setContentText("Open supported UML Package");
+				alert.show();
+			}
+		});
+
 		menu.save.setOnAction(e -> {
 			// menu.saveB.fire();
 		});
@@ -941,4 +970,12 @@ public class Main extends Application {
 		menu.nProject.fire();
 	}
 
+	public boolean isPacked(String name) {
+		boolean ispacked = false;
+		File file = new File("Diagrams/" + name);
+		if (file.exists()) {
+			ispacked = true;
+		}
+		return ispacked;
+	}
 }

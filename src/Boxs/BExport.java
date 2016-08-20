@@ -1,18 +1,22 @@
 package Boxs;
 
 import java.io.File;
+import java.io.IOException;
 
 import Libraries.Pack;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -65,11 +69,27 @@ public class BExport extends Stage {
 		Scene scene = new Scene(root, 300, 400, Color.WHITE);
 		setScene(scene);
 
+		Alert alert = new Alert(AlertType.INFORMATION);
+
 		okB.setOnAction(e -> {
+			DirectoryChooser choose = new DirectoryChooser();
+			choose.setTitle("Export To...");
+			File dir = choose.showDialog(this);
+			String project = list.getSelectionModel().getSelectedItem().toString();
 			pack = new Pack();
+			try {
+				pack.doPack(new File("Diagrams/" + project).toPath(),
+						new File(dir.getPath() + "/" + project + ".uml").toPath());
+				close();
+				alert.setTitle("Success");
+				alert.setHeaderText("Export Success");
+				alert.show();				
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		});
 		closeB.setOnAction(e -> {
-
+			close();
 		});
 	}
 

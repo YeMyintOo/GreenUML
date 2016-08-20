@@ -1,6 +1,7 @@
 package Libraries;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -9,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 public class Pack {
@@ -26,11 +28,38 @@ public class Pack {
 		}
 
 	}
-	
-	public static void main(String[]args) throws IOException{
-		Pack pack=new Pack();
-		pack.doPack(new File("Diagrams/HelloWorld").toPath(), new File("HelloWorld.uml").toPath());
+
+	// Source = zip file
+	public void doUnPack(String source, String target) {
+		File folder = new File("Diagrams" + File.separator + target);
+		folder.mkdirs();
+		File output = new File("Diagrams" + File.separator + target);
+		byte[] buffer = new byte[2048];
+		try {
+			FileInputStream input = new FileInputStream(source);
+			ZipInputStream zip = new ZipInputStream(input);
+			ZipEntry entry = zip.getNextEntry();
+			while (entry != null) {
+				String fileName = entry.getName();
+				File file = new File(output + File.separator + fileName);
+				FileOutputStream foutput = new FileOutputStream(file);
+				int count = 0;
+				while ((count = zip.read(buffer)) > 0) {
+					foutput.write(buffer, 0, count);
+
+				}
+				foutput.close();
+				zip.closeEntry();
+				entry = zip.getNextEntry();
+			}
+			zip.closeEntry();
+			input.close();
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		}
+
 	}
-	
-	
 }

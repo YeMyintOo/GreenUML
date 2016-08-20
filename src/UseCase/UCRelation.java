@@ -8,8 +8,9 @@ import javafx.scene.shape.Line;
 
 public class UCRelation extends Line {
 
-	private CNode snode;// Start Node
-	private CNode enode;// End Node
+	public CNode snode;// Start Node
+	public CNode enode;// End Node
+	public CNode mnode;// Middle Node
 
 	public UCRelation(double startx, double starty, double endx, double endy) {
 		super(startx, starty, endx, endy);
@@ -21,6 +22,11 @@ public class UCRelation extends Line {
 		enode = new CNode();
 		enode.centerXProperty().bind(endXProperty());
 		enode.centerYProperty().bind(endYProperty());
+
+		mnode = new CNode();
+		mnode.setFill(Color.RED);
+		mnode.centerXProperty().bind((startXProperty().add(endXProperty())).divide(2));
+		mnode.centerYProperty().bind((startYProperty().add(endYProperty())).divide(2));
 
 		snode.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
 			@Override
@@ -46,14 +52,27 @@ public class UCRelation extends Line {
 			}
 		});
 
-	}
+		mnode.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				mnode.centerXProperty().unbind();
+				mnode.centerYProperty().unbind();
+				
+				if(e.getX()>mnode.getCenterX()){
+					mnode.setCenterX(e.getX());
+					endXProperty().bind(mnode.centerXProperty());
+					startXProperty().bind(mnode.centerXProperty());
+				}
+				
+				
+				
+				//mnode.setCenterY(e.getY());
 
-	public CNode getSnode() {
-		return snode;
-	}
+				
 
-	public CNode getEnode() {
-		return enode;
+			}
+		});
+
 	}
 
 }

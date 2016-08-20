@@ -5,12 +5,14 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 
+import GUI.Home;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
+import javafx.scene.effect.BoxBlur;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -48,19 +50,19 @@ public class MenusLib {
 	public Menu project;
 
 	public HBox sbar;
-	public Button saveB;
-	public Button printB;
-	public Button pointB;
-	public Button cpointB;
+	public Icon saveB;
+	public Icon printB;
+	public Icon pointB;
+	public Icon cpointB;
 	public ColorPicker cpikcer;
-	public Button deleteB;
-	public Button selectB;
+	public Icon deleteB;
+	public Icon selectB;
 
 	public Button gHLineB; // Horizontal
 	public Button gVLineB; // Vertical
-	public Button rSelectB;// Region Select;
+	public Icon rSelectB;// Region Select;
 
-	public Button gBLineB; // Background
+	public Icon gBLineB; // Background
 	public boolean isgBLine;
 	public BorderPane gridPane;
 
@@ -68,6 +70,8 @@ public class MenusLib {
 	public Fonts Fonts;
 	public boolean isRegionDraw;
 	public FileChooser fileChoose;
+	public BoxBlur bbox;
+	public Home home;
 	// UseCase
 
 	public boolean isUCRelation;
@@ -84,6 +88,9 @@ public class MenusLib {
 	public MenusLib() {
 		pasteKey = new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_ANY);
 		saveKey = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
+
+		bbox = new BoxBlur();
+		home = new Home();
 
 		fileChoose = new FileChooser();
 		fileChoose.setTitle("Import UML Package");
@@ -117,18 +124,22 @@ public class MenusLib {
 		sbar = new HBox();
 		sbar.setAlignment(Pos.BASELINE_RIGHT);
 		sbar.setSpacing(10);
-		pointB = new Button("Pointer");
-		cpointB = new Button("Color Pointer");
+		sbar.setStyle("-fx-padding:5 5 5 5;-fx-background-color:#F5F5F5;");
+		pointB = new Icon("Images/Icons/cursor.png");
+		cpointB = new Icon("Images/Icons/color.png");
 		cpikcer = new ColorPicker();
-		deleteB = new Button("Delete");
-		selectB = new Button("Select");
-		saveB = new Button("Save");
-		printB = new Button("Print");
+		cpikcer.setPrefSize(60, 25);
+		cpikcer.setStyle("-fx-padding:5 5 5 5");
+		deleteB = new Icon("Images/Icons/delete.png");
+		selectB = new Icon("Images/Icons/cursor.png");
+
+		saveB = new Icon("Images/Icons/save.png");
+		printB = new Icon("Images/Icons/print.png");
 		// gHLineB = new Button("GuideLine (Horizontal)");
 		// gVLineB = new Button("GuideLine (Vertical)");
-		gBLineB = new Button("GridLine");
-		rSelectB = new Button("Region Select");
-		sbar.getChildren().addAll(pointB, cpointB, cpikcer, selectB, deleteB, saveB, printB, gBLineB, rSelectB);
+		gBLineB = new Icon("Images/Icons/gridline.png");
+		rSelectB = new Icon("Images/Icons/region.png");
+		sbar.getChildren().addAll(pointB, rSelectB, deleteB, saveB, printB, gBLineB, cpointB, cpikcer);
 
 		Fonts = new Fonts();
 

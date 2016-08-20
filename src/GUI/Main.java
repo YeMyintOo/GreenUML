@@ -54,6 +54,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.effect.BoxBlur;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -107,9 +108,13 @@ public class Main extends Application {
 		stage.centerOnScreen();
 		stage.show();
 
-		menu.rSelectB.setOnAction(e -> {
-			scene.setCursor(Cursor.SE_RESIZE);
+		menu.rSelectB.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				scene.setCursor(Cursor.SE_RESIZE);
+			}
 		});
+
 		menu.clean.setOnAction(e -> {
 			clean();
 		});
@@ -124,18 +129,29 @@ public class Main extends Application {
 				draw.getArea().getChildren().remove(menu.gridPane);
 			}
 		});
-
-		menu.cpointB.setOnAction(e -> {
-			scene.setCursor(Cursor.HAND);
+		menu.cpointB.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				scene.setCursor(Cursor.HAND);
+			}
 		});
-		menu.deleteB.setOnAction(e -> {
-			scene.setCursor(Cursor.CROSSHAIR);
+		menu.deleteB.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				scene.setCursor(Cursor.CROSSHAIR);
+			}
 		});
-		menu.selectB.setOnAction(e -> {
-			scene.setCursor(Cursor.OPEN_HAND);
+		menu.selectB.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				scene.setCursor(Cursor.OPEN_HAND);
+			}
 		});
-		menu.gBLineB.setOnAction(e -> {
-			menu.gridLine.fire();
+		menu.gBLineB.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				menu.gridLine.fire();
+			}
 		});
 
 		stage.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
@@ -210,6 +226,7 @@ public class Main extends Application {
 									GLabel label = new GLabel(e.getX(), e.getY(), menu.Fonts.fonts);
 									draw.getArea().getChildren().addAll(label, label.getText(false),
 											label.getTool(false));
+									draw.objects.add(label);
 									break;
 								case UCPROCESS:
 									UCProcess process = new UCProcess(stage, e.getX(), e.getY(), color);
@@ -724,7 +741,7 @@ public class Main extends Application {
 		menu.nFile.setOnAction(e -> {
 			BNewDiagram box = new BNewDiagram(stage);
 			box.sizeToScene();
-			container.setDisable(true);
+			setBackgorund();
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
 			if (box.condition.equals("finish")) {
@@ -735,7 +752,7 @@ public class Main extends Application {
 					e1.printStackTrace();
 				}
 			}
-			container.setDisable(false);
+			setForeground();
 		});
 
 		menu.oProject.setOnAction(e -> {
@@ -757,6 +774,7 @@ public class Main extends Application {
 			container.setDisable(true);
 			box.setAlwaysOnTop(true);
 			box.showAndWait();
+
 			if (box.getValue().equals("finish")) {
 				File file = null;
 				switch (osType) {
@@ -765,6 +783,10 @@ public class Main extends Application {
 					if (!file.exists()) {
 						file.mkdir();
 						System.out.println("Folder @" + box.nameF.getText().toString() + " is created!");
+						Alert alert = new Alert(AlertType.INFORMATION);
+						alert.setTitle("Success");
+						alert.setHeaderText("Project @" + box.nameF.getText().toString() + " creation is success.");
+						alert.showAndWait();
 					} else {
 						System.out.println("Folder already exists.");
 						Alert alert = new Alert(AlertType.ERROR);
@@ -823,24 +845,31 @@ public class Main extends Application {
 
 		menu.save.setOnAction(e -> {
 			// menu.saveB.fire();
+			Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+			System.out.println("###Object to Save :" + draw.objects.size());
 		});
 
-		menu.saveB.setOnAction(e -> {
-			if (!tabPane.getSelectionModel().isEmpty()) {
-				Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
-				String file = tabPane.getSelectionModel().getSelectedItem().getText();
-				switch (draw.diagram) {
-				case 1:
-					try {
-						UCXml xml = new UCXml("Diagrams/" + draw.projectName + "/" + file + ".xml");
-						xml.add(draw.objects);
-					} catch (IOException e1) {
-						e1.printStackTrace();
+		menu.saveB.addEventFilter(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent e) {
+				if (!tabPane.getSelectionModel().isEmpty()) {
+					Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+					String file = tabPane.getSelectionModel().getSelectedItem().getText();
+					switch (draw.diagram) {
+					case 1:
+						try {
+							UCXml xml = new UCXml("Diagrams/" + draw.projectName + "/" + file + ".xml");
+							xml.add(draw.objects);
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+						break;
 					}
-					break;
 				}
+
 			}
 		});
+
 	}
 
 	public void initState() throws IOException {
@@ -885,6 +914,7 @@ public class Main extends Application {
 		System.out.println("Copy.xml File Loading...");
 		copyxml = new CopyXML();
 
+		container.setCenter(menu.home);
 	}
 
 	public static void main(String[] args) {
@@ -977,5 +1007,18 @@ public class Main extends Application {
 			ispacked = true;
 		}
 		return ispacked;
+	}
+
+	public void setBackgorund() {
+		container.getChildren().removeAll();
+		container.setEffect(menu.bbox);
+		container.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9);");
+		container.setDisable(true);
+	}
+
+	public void setForeground() {
+		container.setEffect(null);
+		container.setStyle("-fx-background-color: rgba(255, 255, 255, 1);");
+		container.setDisable(false);
 	}
 }

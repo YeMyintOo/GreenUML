@@ -20,7 +20,7 @@ public class UCRelation extends Line {
 	public CNode snode;// Start Node
 	public CNode enode;// End Node
 	public CNode mnode;// Middle Node
-	private DropShadow shape;
+	
 	private CopyXML copy;
 	final KeyCombination copyKey = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
 	

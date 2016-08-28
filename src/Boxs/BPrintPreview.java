@@ -1,12 +1,21 @@
 package Boxs;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
 
 import javafx.geometry.Pos;
+import javafx.print.JobSettings;
+import javafx.print.PageLayout;
+import javafx.print.PageOrientation;
+import javafx.print.Paper;
+import javafx.print.Printer;
+import javafx.print.PrinterJob;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,6 +26,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.transform.Scale;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -38,7 +49,7 @@ public class BPrintPreview extends Stage {
 		initModality(Modality.WINDOW_MODAL); // Prevent click parent stage
 		initOwner(owner);
 		setResizable(false);
-		setTitle("Print Preview...");
+		setTitle("Image Preview...");
 
 		root = new BorderPane();
 
@@ -57,10 +68,13 @@ public class BPrintPreview extends Stage {
 		HBox btnB = new HBox();
 		btnB.setAlignment(Pos.BASELINE_CENTER);
 		btnB.setStyle("-fx-padding: 15 0 0 0;");
-		btnB.getChildren().addAll(closeB, pngB, printB);
+		btnB.getChildren().addAll(closeB, pngB);
 
 		// printP.setTop(deviceL);
-		printP.setCenter(list);
+	//	printP.setCenter(list);
+		BorderPane temp=new BorderPane();
+		temp.setStyle("-fx-background-color:#EFE");
+		printP.setCenter(temp);
 		printP.setBottom(btnB);
 
 		BorderPane imgV = new BorderPane();
@@ -96,6 +110,21 @@ public class BPrintPreview extends Stage {
 		closeB.setOnAction(e -> {
 			close();
 		});
+		pngB.setOnAction(e -> {
+			FileChooser choose = new FileChooser();
+			choose.setTitle("Save To...");
+			FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("Image files (*.png)", "*.png");
+			choose.getExtensionFilters().add(extFilter);
+			File file = choose.showSaveDialog(owner);
+			if (file != null) {
+				try {
+					Files.copy(new File("ImgTemp/" + pName + ".png").toPath(), file.toPath());
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+		
 	}
 
 	public void getPrinterList() {
@@ -108,11 +137,4 @@ public class BPrintPreview extends Stage {
 		list.getItems().addAll(names);
 	}
 
-	public void printNode() {
-
-	}
-
-	public void printPNG() {
-
-	}
 }

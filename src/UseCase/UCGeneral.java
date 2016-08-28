@@ -12,7 +12,7 @@ import javafx.scene.shape.Path;
 
 public class UCGeneral extends Line {
 	private Color color;
-	private Path tri;
+	public Path tri;
 	private CNode snode;// Start Node
 	private CNode enode;// End Node
 

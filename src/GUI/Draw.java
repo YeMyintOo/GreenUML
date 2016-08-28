@@ -150,7 +150,6 @@ public class Draw extends BorderPane {
 		});
 	}
 
-	// Initial Tool Loading...
 	public void initLoadUC() {
 		ucprocess = new Button("P");
 		Tooltip ucp = new Tooltip("Process");
@@ -187,7 +186,7 @@ public class Draw extends BorderPane {
 			ctool = Tool.UCEXTEND;
 		});
 	}
-	//
+	
 
 	public void initLoadSE() {
 		serole = new Button("R");

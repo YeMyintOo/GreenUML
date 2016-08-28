@@ -6,6 +6,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 
 import GUI.Home;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ColorPicker;
@@ -13,9 +14,11 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.effect.BoxBlur;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
@@ -27,6 +30,7 @@ public class MenusLib {
 	public Document doc;
 	public final KeyCombination pasteKey;
 	public final KeyCombination saveKey;
+	public final KeyCombination cutKey;
 
 	public MenuItem nProject; // New Project
 	public MenuItem oProject; // Open Project
@@ -43,6 +47,7 @@ public class MenusLib {
 
 	public MenuItem clean;
 	public MenuItem gridLine;
+	public MenuItem closeAll;
 
 	public MenuBar bar;
 	public Menu file;
@@ -84,10 +89,17 @@ public class MenusLib {
 	public boolean isDActivation;
 
 	public boolean isCDepend;
+	
+	public boolean isAEdge;
+	
+	public boolean isCODepend;
+	
+	public boolean isDprotocal;
 
 	public MenusLib() {
 		pasteKey = new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_ANY);
 		saveKey = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_ANY);
+		cutKey = new KeyCodeCombination(KeyCode.X, KeyCombination.CONTROL_ANY);
 
 		bbox = new BoxBlur();
 		home = new Home();
@@ -116,7 +128,8 @@ public class MenusLib {
 
 		clean = new MenuItem("Clean");
 		gridLine = new MenuItem("GridLine");
-		project.getItems().addAll(clean, gridLine);
+		closeAll = new MenuItem("Close All");
+		project.getItems().addAll(clean, gridLine, closeAll);
 
 		bar.getMenus().addAll(file, edit, project);
 

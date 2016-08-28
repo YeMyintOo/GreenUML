@@ -17,6 +17,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import UseCase.UCActor;
 import UseCase.UCProcess;
 
 public class UCXml {
@@ -75,6 +76,18 @@ public class UCXml {
 				diagram.appendChild(color);
 
 				root.appendChild(diagram);
+			}
+			
+			if(objects.get(i) instanceof UCActor){
+				UCActor actor = (UCActor) objects.get(i);
+				Element diagram = document.createElement("Diagram");
+				diagram.setAttribute("Type","UCActor");
+				Element centerx = document.createElement("Centerx");
+				Element centery = document.createElement("Centery");
+				Element xradius = document.createElement("Xradius");
+				Element yradius = document.createElement("Yradius");
+				Element label = document.createElement("Label");
+				Element color = document.createElement("Color");
 			}
 		}
 		save();

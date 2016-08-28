@@ -53,8 +53,45 @@ public class Draw extends BorderPane {
 	public Button ccompositinB;
 	public Button cdependencyB;
 	public Button cinheritanceB;
-
 	///////////////////
+
+	// State Chart//////////
+	public Button stateStartB;
+	public Button stateFinalB;
+	public Button stateHistoryB;
+	public Button stateB;
+	public Button subStateB;
+	public Button stateTranB;
+
+	////////////////////////
+
+	// Activity//////////////
+	public Button aactionB;
+	public Button aedgeB;
+	public Button aendnodeB;
+	public Button ainitnodeB;
+	public Button aregionB;
+	public Button atimeB;
+	////////////////////////
+
+	// Component ////////////
+	public Button coartifactB;
+	public Button cocompoentB;
+	public Button codependB;
+	public Button colibraryB;
+	public Button copackageB;
+	public Button coscomponentB;
+	////////////////////////
+
+	/// Development ///////////
+	public Button dcomponentB;
+	public Button ddatabaseB;
+	public Button ddeviceB;
+	public Button dfileB;
+	public Button dprotocalB;
+	public Button dsoftwareB;
+	public Button dsystemB;
+	//////////////////////////
 
 	public Draw(Scene scene, int diagram, String projectName) {
 		ctool = Tool.POINTER;
@@ -91,6 +128,18 @@ public class Draw extends BorderPane {
 			break;
 		case 5:
 			initLoadC();
+			break;
+		case 6:
+			initLoadS();
+			break;
+		case 7:
+			initLoadA();
+			break;
+		case 8:
+			initLoadCO();
+			break;
+		case 9:
+			initLoadD();
 			break;
 		}
 
@@ -178,7 +227,7 @@ public class Draw extends BorderPane {
 
 		tool.getChildren().addAll(classB, interfaceB, abstractB, caggregationB, cassicationB, ccompositinB,
 				cdependencyB, cinheritanceB);
-		
+
 		classB.setOnAction(e -> {
 			ctool = Tool.CLASS;
 		});
@@ -203,6 +252,133 @@ public class Draw extends BorderPane {
 		cinheritanceB.setOnAction(e -> {
 			ctool = Tool.CINHERITANCE;
 		});
+	}
+
+	public void initLoadS() {
+		stateStartB = new Button("S");
+		stateFinalB = new Button("F");
+		stateHistoryB = new Button("H");
+		stateB = new Button("SS");
+		subStateB = new Button("sS");
+		stateTranB = new Button("T");
+
+		stateStartB.setOnAction(e -> {
+			System.out.println(":State Start");
+			ctool = Tool.STATESTART;
+		});
+		stateFinalB.setOnAction(e -> {
+			System.out.println(":State Final");
+			ctool = Tool.STATEFINAL;
+		});
+		stateHistoryB.setOnAction(e -> {
+			ctool = Tool.STATEHISTORY;
+		});
+		stateB.setOnAction(e -> {
+			ctool = Tool.STATE;
+		});
+		subStateB.setOnAction(e -> {
+			ctool = Tool.SUBSTATE;
+		});
+		stateTranB.setOnAction(e -> {
+			ctool = Tool.STATETRANSITION;
+		});
+
+		tool.getChildren().addAll(stateStartB, stateFinalB, stateHistoryB, stateB, subStateB, stateTranB);
+
+	}
+
+	public void initLoadA() {
+		aactionB = new Button("A");
+		aedgeB = new Button("E");
+		aendnodeB = new Button("E");
+		ainitnodeB = new Button("I");
+		aregionB = new Button("R");
+		atimeB = new Button("T");
+
+		aactionB.setOnAction(e -> {
+			ctool = Tool.AACTION;
+		});
+		aedgeB.setOnAction(e -> {
+			ctool = Tool.AEDGE;
+		});
+		aendnodeB.setOnAction(e -> {
+			ctool = Tool.AENDNODE;
+		});
+		ainitnodeB.setOnAction(e -> {
+			ctool = Tool.AINITNODE;
+		});
+		aregionB.setOnAction(e -> {
+			ctool = Tool.AREGION;
+		});
+		atimeB.setOnAction(e -> {
+			ctool = Tool.ATIME;
+		});
+
+		tool.getChildren().addAll(aactionB, aedgeB, aendnodeB, ainitnodeB, aregionB, atimeB);
+	}
+
+	public void initLoadCO() {
+		coartifactB = new Button("A");
+		cocompoentB = new Button("C");
+		codependB = new Button("D");
+		colibraryB = new Button("L");
+		copackageB = new Button("P");
+		coscomponentB = new Button("sC");
+
+		coartifactB.setOnAction(e -> {
+			ctool = Tool.COARTEFACT;
+		});
+		cocompoentB.setOnAction(e -> {
+			ctool = Tool.COCOMPONENT;
+		});
+		codependB.setOnAction(e -> {
+			ctool = Tool.CODEPEND;
+		});
+		colibraryB.setOnAction(e -> {
+			ctool = Tool.COLIBRARY;
+		});
+		copackageB.setOnAction(e -> {
+			ctool = Tool.COPACKAGE;
+		});
+		coscomponentB.setOnAction(e -> {
+			ctool = Tool.COSCOMPONENT;
+		});
+
+		tool.getChildren().addAll(coartifactB, cocompoentB, codependB, colibraryB, copackageB, coscomponentB);
+	}
+
+	public void initLoadD() {
+		dcomponentB = new Button("C");
+		ddatabaseB = new Button("D");
+		ddeviceB = new Button("D");
+		dfileB = new Button("F");
+		dprotocalB = new Button("P");
+		dsoftwareB = new Button("S");
+		dsystemB = new Button("S");
+
+		dcomponentB.setOnAction(e -> {
+			ctool = Tool.DCOMPONENT;
+		});
+		ddatabaseB.setOnAction(e -> {
+			ctool = Tool.DDATABASE;
+		});
+		ddeviceB.setOnAction(e -> {
+			ctool = Tool.DDEVICE;
+		});
+		dfileB.setOnAction(e -> {
+			ctool = Tool.DFILE;
+		});
+		dprotocalB.setOnAction(e -> {
+			ctool = Tool.DPROTOCAL;
+		});
+		dsoftwareB.setOnAction(e -> {
+			ctool = Tool.DSOFTWARE;
+		});
+		dsystemB.setOnAction(e -> {
+			ctool = Tool.DSYSTEM;
+		});
+
+		tool.getChildren().addAll(dcomponentB, ddatabaseB,ddeviceB,dfileB, dprotocalB, dsoftwareB, dsystemB);
 	}
 
 	public Tool getCTool() {

@@ -1,5 +1,8 @@
 package UseCase;
 
+import java.io.IOException;
+
+import XMLFactory.CopyXML;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -8,6 +11,8 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -16,10 +21,11 @@ import javafx.scene.shape.Line;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 public class UCActor extends Circle {
 
-	private StringProperty data;
+	public StringProperty data;
 	private Text label;
 	private TextField field;
 	private Line body;
@@ -29,7 +35,11 @@ public class UCActor extends Circle {
 	private Line leg4;
 	private DropShadow shape;
 
-	public UCActor(double centerX, double centerY, Color color) {
+	private CopyXML copy;
+	final KeyCombination copyKey = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+	final KeyCombination cutKey = new KeyCodeCombination(KeyCode.X, KeyCombination.CONTROL_ANY);
+	
+	public UCActor(Stage owner,double centerX, double centerY, Color color) {
 		super(centerX, centerY, 20);
 		setFill(color);
 		setStroke(Color.BLACK);
@@ -116,6 +126,23 @@ public class UCActor extends Circle {
 				label.layoutXProperty().bind(centerXProperty().subtract(label.getLayoutBounds().getWidth() / 2));
 				if (e.getCode() == KeyCode.ENTER) {
 					field.setVisible(false);
+				}
+			}
+		});
+		
+		owner.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent key) {
+				if (isHover()) {
+					if (copyKey.match(key)) {
+						try {
+							if (copy == null)
+								copy = new CopyXML();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						copy.copyUCActor(centerX, centerY, data.get(), getFill().toString());
+					}
 				}
 			}
 		});

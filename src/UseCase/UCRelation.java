@@ -1,18 +1,31 @@
 package UseCase;
 
+
+
 import Libraries.CNode;
+import XMLFactory.CopyXML;
 import javafx.event.EventHandler;
+import javafx.scene.effect.DropShadow;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
+import javafx.stage.Stage;
 
 public class UCRelation extends Line {
 
 	public CNode snode;// Start Node
 	public CNode enode;// End Node
 	public CNode mnode;// Middle Node
+	private DropShadow shape;
+	private CopyXML copy;
+	final KeyCombination copyKey = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
+	
 
-	public UCRelation(double startx, double starty, double endx, double endy) {
+	public UCRelation(Stage owner, double startx, double starty, double endx, double endy) {
 		super(startx, starty, endx, endy);
 		setStroke(Color.BLACK);
 		snode = new CNode();
@@ -57,22 +70,18 @@ public class UCRelation extends Line {
 			public void handle(MouseEvent e) {
 				mnode.centerXProperty().unbind();
 				mnode.centerYProperty().unbind();
-				
-				if(e.getX()>mnode.getCenterX()){
+
+				if (e.getX() > mnode.getCenterX()) {
 					mnode.setCenterX(e.getX());
 					endXProperty().bind(mnode.centerXProperty());
 					startXProperty().bind(mnode.centerXProperty());
 				}
-				
-				
-				
-				//mnode.setCenterY(e.getY());
-
-				
-
 			}
 		});
 
+		
+
+	
 	}
 
 }

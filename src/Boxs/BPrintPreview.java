@@ -45,6 +45,7 @@ public class BPrintPreview extends Stage {
 		printP = new BorderPane();
 		printP.setPrefWidth(200);
 		printP.setMaxWidth(200);
+		printP.setPrefHeight(360);
 		printP.setMaxHeight(360);
 		printP.setStyle("-fx-padding: 20 10 50 20;");
 
@@ -91,8 +92,8 @@ public class BPrintPreview extends Stage {
 		setScene(scene);
 
 		getPrinterList();
-		
-		closeB.setOnAction(e->{
+
+		closeB.setOnAction(e -> {
 			close();
 		});
 	}

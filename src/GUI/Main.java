@@ -3,10 +3,17 @@ package GUI;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import Activity.AAction;
+import Activity.AEdge;
+import Activity.AEndNode;
+import Activity.AInitNode;
+import Activity.ARegion;
+import Activity.ATime;
 import Boxs.BExport;
 import Boxs.BNewDiagram;
 import Boxs.BNewProject;
@@ -19,6 +26,19 @@ import ClassD.ClassDepen;
 import ClassD.ClassFunBox;
 import ClassD.ClassInterface;
 import ClassD.EditClassDataBox;
+import Component.COArtifact;
+import Component.COComponent;
+import Component.CODepend;
+import Component.COLibrary;
+import Component.COPackage;
+import Component.COSComponent;
+import Development.DComponent;
+import Development.DDatabase;
+import Development.DDeivce;
+import Development.DFile;
+import Development.DProtocal;
+import Development.DSoftware;
+import Development.DSystem;
 import GTool.GLabel;
 import Hardware.Screen;
 import Libraries.MenusLib;
@@ -30,6 +50,11 @@ import Sequence.SEActivation;
 import Sequence.SEDActivation;
 import Sequence.SENActivation;
 import Sequence.SERole;
+import State.SFinalState;
+import State.SHistory;
+import State.SStartState;
+import State.SState;
+import State.SSubState;
 import UseCase.UCActor;
 import UseCase.UCBoundary;
 import UseCase.UCExtend;
@@ -54,7 +79,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
-import javafx.scene.effect.BoxBlur;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -94,6 +118,12 @@ public class Main extends Application {
 	SENActivation senactivation;
 	SEDActivation sedactivation;
 
+	AEdge aedge;
+
+	CODepend codepend;
+
+	DProtocal dprotocal;
+
 	ClassDepen cdepen;
 	Stage stage;
 
@@ -113,6 +143,9 @@ public class Main extends Application {
 			public void handle(MouseEvent e) {
 				scene.setCursor(Cursor.SE_RESIZE);
 			}
+		});
+		menu.closeAll.setOnAction(e -> {
+			closeAllTab();
 		});
 
 		menu.clean.setOnAction(e -> {
@@ -158,11 +191,11 @@ public class Main extends Application {
 			@Override
 			public void handle(KeyEvent key) {
 				if (menu.pasteKey.match(key)) {
-					System.out.println("#Paste");
 					menu.dbFactory = DocumentBuilderFactory.newInstance();
 					try {
 						menu.dBuilder = menu.dbFactory.newDocumentBuilder();
 						menu.doc = menu.dBuilder.parse("Temp/Copy.xml");
+						Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
 						switch (menu.doc.getElementsByTagName("diagram").item(0).getTextContent()) {
 						case "UCProcess":
 							double x = Double
@@ -182,9 +215,43 @@ public class Main extends Application {
 							process.data.set(text);
 							process.label.layoutXProperty().bind(process.centerXProperty()
 									.subtract(process.label.layoutBoundsProperty().getValue().getWidth() / 2));
-							Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
 							draw.getArea().getChildren().addAll(process, process.getLabel(), process.getText(false));
 							draw.objects.add(process);
+							break;
+						case "UCActor":
+							double ucax = Double
+									.parseDouble(menu.doc.getElementsByTagName("centerx").item(0).getTextContent());
+							double ucay = Double
+									.parseDouble(menu.doc.getElementsByTagName("centery").item(0).getTextContent());
+							String ucatext = menu.doc.getElementsByTagName("label").item(0).getTextContent();
+							String ucacolor = menu.doc.getElementsByTagName("color").item(0).getTextContent();
+							UCActor actor = new UCActor(stage, ucax + 10, ucay + 10, Color.web(ucacolor));
+							actor.data.set(ucatext);
+							draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(), actor.getLeg2(),
+									actor.getLeg3(), actor.getLeg4(), actor.getLabel(), actor.getText(false));
+							draw.objects.add(actor);
+							break;
+						case "UCBoundary":
+							System.out.println("UCBoundary Paste");
+							double ucbx = Double
+									.parseDouble(menu.doc.getElementsByTagName("x").item(0).getTextContent());
+							double ucby = Double
+									.parseDouble(menu.doc.getElementsByTagName("y").item(0).getTextContent());
+							double ucbw = Double
+									.parseDouble(menu.doc.getElementsByTagName("width").item(0).getTextContent());
+							double ucbh = Double
+									.parseDouble(menu.doc.getElementsByTagName("height").item(0).getTextContent());
+							String ucbtext = menu.doc.getElementsByTagName("label").item(0).getTextContent();
+							String ucbcolor = menu.doc.getElementsByTagName("color").item(0).getTextContent();
+							UCBoundary boundary = new UCBoundary(stage, ucbx + 40, ucby + 40, Color.web(ucbcolor));
+							boundary.setWidth(ucbw);
+							boundary.setHeight(ucbh);
+							boundary.data.set(ucbtext);
+
+							draw.getArea().getChildren().addAll(boundary, boundary.resizeVB, boundary.resizeHB);
+							// boundary.toBack();
+							draw.objects.add(boundary);
+
 							break;
 						}
 					} catch (Exception e) {
@@ -192,6 +259,28 @@ public class Main extends Application {
 					}
 				} else if (menu.saveKey.match(key)) {
 					menu.save.fire();
+				} else if (menu.cutKey.match(key)) {
+					Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+					for (int i = 0; i < draw.objects.size(); i++) {
+						Object obj = draw.objects.get(i);
+						CopyXML copy = null;
+						try {
+							copy = new CopyXML();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+						if (obj instanceof UCProcess) {
+							UCProcess uc = (UCProcess) obj;
+							if (uc.isHover()) {
+								copy.copyUCProcess(uc.getCenterX(), uc.getCenterY(), uc.getRadiusX(), uc.getRadiusY(),
+										uc.data.get(), uc.getFill().toString());
+								draw.getArea().getChildren().removeAll(uc, uc.getLabel(), uc.getText(false));
+							} else {
+								System.out.println("Not Pressed");
+							}
+						}
+					}
 				}
 			}
 		});
@@ -235,13 +324,14 @@ public class Main extends Application {
 									draw.objects.add(process);
 									break;
 								case UCACTOR:
-									UCActor actor = new UCActor(e.getX(), e.getY(), color);
+									UCActor actor = new UCActor(stage, e.getX(), e.getY(), color);
 									draw.getArea().getChildren().addAll(actor, actor.getBody(), actor.getLeg(),
 											actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
 											actor.getText(false));
+									draw.objects.add(actor);
 									break;
 								case UCREALATION:
-									ucrelation = new UCRelation(e.getX(), e.getY(), e.getX(), e.getY());
+									ucrelation = new UCRelation(stage, e.getX(), e.getY(), e.getX(), e.getY());
 									draw.getArea().getChildren().addAll(ucrelation);
 									menu.isUCRelation = true;
 									break;
@@ -251,9 +341,11 @@ public class Main extends Application {
 									menu.isUCGeneral = true;
 									break;
 								case UCBOUNDARY:
-									UCBoundary ucboundary = new UCBoundary(e.getX(), e.getY(), color);
-									draw.getArea().getChildren().addAll(ucboundary);
+									UCBoundary ucboundary = new UCBoundary(stage, e.getX(), e.getY(), color);
+									draw.getArea().getChildren().addAll(ucboundary, ucboundary.resizeVB,
+											ucboundary.resizeHB);
 									ucboundary.toBack();
+									draw.objects.add(ucboundary);
 									break;
 								case UCINCLUDE:
 									ucinclude = new UCInclude(e.getX(), e.getY(), e.getX(), e.getY(), color);
@@ -525,6 +617,117 @@ public class Main extends Application {
 									draw.getChildren().add(cdepen);
 									menu.isCDepend = true;
 									break;
+								case STATESTART:
+									SStartState start = new SStartState(e.getX(), e.getY(), color);
+									draw.getChildren().add(start);
+									break;
+								case STATEFINAL:
+									SFinalState sfinal = new SFinalState(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(sfinal.outer, sfinal);
+									break;
+								case STATE:
+									SState state = new SState(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(state, state.label, state.getText(true));
+									break;
+								case SUBSTATE:
+									SSubState substate = new SSubState(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(substate, substate.label, substate.br,
+											substate.getText(false));
+									break;
+								case STATEHISTORY:
+									SHistory hisState = new SHistory(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(hisState, hisState.label, hisState.hlabel, hisState.br1,
+											hisState.br2);
+									break;
+								case STATETRANSITION:
+									// STransition stateTran=new STransition();
+									break;
+								case AACTION:
+									AAction aaction = new AAction(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(aaction, aaction.getText(false), aaction.label);
+									break;
+								case AEDGE:
+									System.out.println("Activiy edge");
+									aedge = new AEdge(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getChildren().addAll(aedge);
+									menu.isAEdge = true;
+									break;
+								case AENDNODE:
+									AEndNode aendnode = new AEndNode(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(aendnode.outer, aendnode);
+									break;
+								case AINITNODE:
+									AInitNode ainitnode = new AInitNode(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(ainitnode);
+									break;
+								case AREGION:
+									ARegion aregion = new ARegion(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(aregion, aregion.label, aregion.getText(false));
+									break;
+								case ATIME:
+									ATime atime = new ATime(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(atime, atime.l0, atime.l1, atime.l2, atime.l3);
+									break;
+								case COARTEFACT:
+									COArtifact coartifact = new COArtifact(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(coartifact, coartifact.head, coartifact.label,
+											coartifact.field);
+									break;
+								case COCOMPONENT:
+									COComponent cocomponent = new COComponent(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(cocomponent, cocomponent.label, cocomponent.node1,
+											cocomponent.node2);
+									break;
+								case CODEPEND:
+									codepend = new CODepend(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									menu.isCODepend = true;
+									draw.getChildren().add(codepend);
+									break;
+								case COLIBRARY:
+									COLibrary colibrary = new COLibrary(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(colibrary, colibrary.label, colibrary.getText(true));
+									break;
+								case COPACKAGE:
+									COPackage copackage = new COPackage(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(copackage, copackage.getLabel(), copackage.getText(true));
+									break;
+								case COSCOMPONENT:
+									COSComponent coscompnent = new COSComponent(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(coscompnent, coscompnent.node1, coscompnent.node2,
+											coscompnent.label);
+									break;
+								case DCOMPONENT:
+									DComponent dcomponent = new DComponent(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(dcomponent, dcomponent.data, dcomponent.label,
+											dcomponent.file, dcomponent.node1, dcomponent.node2);
+									break;
+								case DDATABASE:
+									DDatabase ddatebase = new DDatabase(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(ddatebase.shape, ddatebase, ddatebase.data,
+											ddatebase.label);
+									break;
+								case DDEVICE:
+									DDeivce ddevice = new DDeivce(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(ddevice.shape, ddevice, ddevice.data, ddevice.label);
+									break;
+								case DFILE:
+									DFile dfile = new DFile(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(dfile, dfile.data, dfile.label);
+									break;
+								case DPROTOCAL:
+									dprotocal = new DProtocal(e.getX(), e.getY(), e.getX(), e.getY(), color);
+									draw.getChildren().addAll(dprotocal);
+									menu.isDprotocal = true;
+									break;
+								case DSOFTWARE:
+									DSoftware dsoftware = new DSoftware(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(dsoftware.shape, dsoftware, dsoftware.data,
+											dsoftware.label);
+									break;
+								case DSYSTEM:
+									DSystem dsystem = new DSystem(e.getX(), e.getY(), color);
+									draw.getChildren().addAll(dsystem, dsystem.label);
+									break;
 								default:
 									break;
 
@@ -552,19 +755,22 @@ public class Main extends Application {
 									GLabel label = (GLabel) obj;
 									draw.getArea().getChildren().removeAll(label, label.getText(false),
 											label.getTool(false));
+									draw.objects.remove(label);
 								} else if (obj instanceof UCProcess) {
 									UCProcess ucprocess = (UCProcess) obj;
 									draw.getArea().getChildren().removeAll(ucprocess, ucprocess.getLabel(),
 											ucprocess.getText(false));
-
+									draw.objects.remove(ucprocess);
 								} else if (obj instanceof UCActor) {
 									UCActor actor = (UCActor) obj;
 									draw.getArea().getChildren().removeAll(actor, actor.getBody(), actor.getLeg(),
 											actor.getLeg2(), actor.getLeg3(), actor.getLeg4(), actor.getLabel(),
 											actor.getText(false));
+									draw.objects.remove(actor);
 								} else if (obj instanceof UCBoundary) {
 									UCBoundary boundary = (UCBoundary) obj;
 									draw.getArea().getChildren().removeAll(boundary);
+									draw.objects.remove(boundary);
 								}
 							}
 
@@ -611,6 +817,15 @@ public class Main extends Application {
 								else if (e.getY() < region.getY() + region.getHeight())
 									region.setHeight(region.getHeight() - 4);
 
+							} else if (menu.isAEdge) {
+								aedge.setEndX(e.getX());
+								aedge.setEndY(e.getY());
+							} else if (menu.isCODepend) {
+								codepend.setEndX(e.getX());
+								codepend.setEndY(e.getY());
+							} else if (menu.isDprotocal) {
+								dprotocal.setEndX(e.getX());
+								dprotocal.setEndY(e.getY());
 							}
 						}
 					});
@@ -624,6 +839,7 @@ public class Main extends Application {
 								ucrelation.setEndY(e.getY());
 								draw.getArea().getChildren().addAll(ucrelation.snode, ucrelation.enode,
 										ucrelation.mnode);
+								draw.objects.add(ucrelation);
 								menu.isUCRelation = false;
 								ucrelation = null;
 							} else if (menu.isUCGeneral) {
@@ -632,6 +848,7 @@ public class Main extends Application {
 								ucgeneral.calculateTri();
 								draw.getArea().getChildren().addAll(ucgeneral.getSnode(), ucgeneral.getEnode(),
 										ucgeneral.getTri());
+								draw.objects.add(ucgeneral);
 								menu.isUCGeneral = false;
 								ucgeneral = null;
 							} else if (menu.isUCInclude) {
@@ -640,6 +857,7 @@ public class Main extends Application {
 								ucinclude.update();
 								draw.getArea().getChildren().addAll(ucinclude.getSnode(), ucinclude.getEnode(),
 										ucinclude.top, ucinclude.label);
+								draw.objects.add(ucinclude);
 								menu.isUCInclude = false;
 								ucinclude = null;
 							} else if (menu.isUCExtend) {
@@ -648,6 +866,7 @@ public class Main extends Application {
 								ucextend.update();
 								draw.getArea().getChildren().addAll(ucextend.getSnode(), ucextend.getEnode(),
 										ucextend.top, ucextend.label);
+								draw.objects.add(ucextend);
 								menu.isUCExtend = false;
 								ucextend = null;
 							} else if (menu.isActivation) {
@@ -693,7 +912,8 @@ public class Main extends Application {
 
 								VBox priceBox = new VBox();
 								Button printB = new Button("P");
-								priceBox.getChildren().addAll(printB);
+								Button closeB = new Button("C");
+								priceBox.getChildren().addAll(printB, closeB);
 								priceBox.layoutXProperty().bind(region.xProperty().add(region.getWidth()));
 								priceBox.layoutYProperty()
 										.bind(region.yProperty().add(region.getHeight()).subtract(50));
@@ -718,7 +938,7 @@ public class Main extends Application {
 
 									}
 
-									regionPrint();
+									// regionPrint();
 
 									// Show Preview Print
 									BPrintPreview preview = new BPrintPreview(stage, picName);
@@ -727,9 +947,34 @@ public class Main extends Application {
 									preview.setAlwaysOnTop(true);
 									preview.showAndWait();
 									draw.getArea().getChildren().removeAll(priceBox, region);
+									container.setDisable(false);
 									region = null;
 								});
-
+								closeB.setOnAction(e2 -> {
+									draw.getArea().getChildren().removeAll(priceBox, region);
+									region = null;
+								});
+							} else if (menu.isAEdge) {
+								aedge.setEndX(e.getX());
+								aedge.setEndY(e.getY());
+								aedge.filterLine();
+								draw.getArea().getChildren().addAll(aedge.l1, aedge.l2, aedge.l3);
+								aedge = null;
+								menu.isAEdge = false;
+							} else if (menu.isCODepend) {
+								codepend.setEndX(e.getX());
+								codepend.setEndY(e.getY());
+								codepend.recalculatePoint();
+								draw.getArea().getChildren().addAll(codepend.top, codepend.bot);
+								codepend = null;
+								menu.isCODepend = false;
+							} else if (menu.isDprotocal) {
+								dprotocal.setEndX(e.getX());
+								dprotocal.setEndY(e.getY());
+								dprotocal.filterLine();
+								draw.getArea().getChildren().addAll(dprotocal.l1, dprotocal.l2, dprotocal.l3);
+								dprotocal = null;
+								menu.isDprotocal = false;
 							}
 						}
 					});
@@ -846,6 +1091,7 @@ public class Main extends Application {
 		menu.save.setOnAction(e -> {
 			// menu.saveB.fire();
 			Draw draw = (Draw) tabPane.getSelectionModel().getSelectedItem().getContent();
+
 			System.out.println("###Object to Save :" + draw.objects.size());
 		});
 
@@ -996,6 +1242,16 @@ public class Main extends Application {
 		}
 	}
 
+	public void closeAllTab() {
+		// Save Before Close
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setTitle("Save!");
+		alert.setHeaderText("Save before close diagram");
+		alert.showAndWait();
+		List<Tab> tabs = tabPane.getTabs();
+		tabPane.getTabs().removeAll(tabs);
+	}
+
 	public void openNewProjectBox() {
 		menu.nProject.fire();
 	}
@@ -1012,13 +1268,13 @@ public class Main extends Application {
 	public void setBackgorund() {
 		container.getChildren().removeAll();
 		container.setEffect(menu.bbox);
-		container.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9);");
+		// container.setStyle("-fx-background-color: rgba(0, 0, 0, 0.9);");
 		container.setDisable(true);
 	}
 
 	public void setForeground() {
 		container.setEffect(null);
-		container.setStyle("-fx-background-color: rgba(255, 255, 255, 1);");
+		// container.setStyle("-fx-background-color: rgba(255, 255, 255, 1);");
 		container.setDisable(false);
 	}
 }

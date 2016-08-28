@@ -20,6 +20,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import UseCase.UCProcess;
+import javafx.scene.paint.Color;
 
 public class CopyXML {
 	protected DocumentBuilderFactory dbFactory;
@@ -90,9 +91,65 @@ public class CopyXML {
 		root.appendChild(color);
 
 		save();
-		System.out.print("#Success Copy");
+		System.out.println("#Success Copy");
 	}
 
+	public void copyUCActor(double x, double y, String l, String c) {
+		removeChilds(root);
+
+		Element diagram = document.createElement("diagram");
+		Element centerx = document.createElement("centerx");
+		Element centery = document.createElement("centery");
+		Element label = document.createElement("label");
+		Element color = document.createElement("color");
+
+		diagram.appendChild(document.createTextNode("UCActor"));
+		centerx.appendChild(document.createTextNode("" + x));
+		centery.appendChild(document.createTextNode("" + y));
+		label.appendChild(document.createTextNode("" + l));
+		color.appendChild(document.createTextNode("" + c));
+
+		root.appendChild(diagram);
+		root.appendChild(centerx);
+		root.appendChild(centery);
+		root.appendChild(label);
+		root.appendChild(color);
+		save();
+		System.out.println("#Success Copy");
+	}
+
+	public void copyUCBoundary(double x, double y, double w, double h, String l, String c) {
+		removeChilds(root);
+
+		Element diagram = document.createElement("diagram");
+		Element centerx = document.createElement("x");
+		Element centery = document.createElement("y");
+		Element width = document.createElement("width");
+		Element height = document.createElement("height");
+		Element label = document.createElement("label");
+		Element color = document.createElement("color");
+
+		diagram.appendChild(document.createTextNode("UCBoundary"));
+		centerx.appendChild(document.createTextNode("" + x));
+		centery.appendChild(document.createTextNode("" + y));
+		label.appendChild(document.createTextNode("" + l));
+		color.appendChild(document.createTextNode("" + c));
+		width.appendChild(document.createTextNode("" + w));
+		height.appendChild(document.createTextNode("" + h));
+
+		root.appendChild(diagram);
+		root.appendChild(centerx);
+		root.appendChild(centery);
+		root.appendChild(label);
+		root.appendChild(color);
+		root.appendChild(width);
+		root.appendChild(height);
+
+		save();
+		System.out.println("#Success Copy");
+	}
+	
+	
 
 	public void save() {
 		try {

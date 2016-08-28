@@ -1,6 +1,9 @@
 package UseCase;
 
+import java.io.IOException;
+
 import Libraries.CNode;
+import XMLFactory.CopyXML;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -9,6 +12,8 @@ import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.DropShadow;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
@@ -16,37 +21,54 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 public class UCBoundary extends Rectangle {
-	private StringProperty data;
+	public StringProperty data;
 	private Text label;
 	private TextField text;
 	private DropShadow shape;
-	public CNode botRNode;
+	public CNode resizeHB;
+	public CNode resizeVB;
+	private CopyXML copy;
+	final KeyCombination copyKey = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY);
 
-	public UCBoundary(double x, double y, Color color) {
+	public UCBoundary(Stage owner, double x, double y, Color color) {
 		super(x, y, 300, 400);
 		setX(x);
 		setY(y);
 		setFill(color);
-		//setOpacity(0.3);
+		// setOpacity(0.3);
 		setStroke(Color.BLACK);
 		setArcWidth(10);
 		setArcHeight(10);
 		data = new SimpleStringProperty("Label");
 
-		botRNode = new CNode();
-		botRNode.setRadius(40);
-		botRNode.centerXProperty().bind(xProperty().add(widthProperty()));
-		botRNode.centerYProperty().bind(yProperty().add(heightProperty()));
+		resizeHB = new CNode();
+		resizeHB.centerXProperty().bind(xProperty().add(widthProperty()));
+		resizeHB.centerYProperty().bind(yProperty().add(20));
 
-		botRNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+		resizeHB.addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
 			@Override
-			public void handle(MouseEvent e) {
-				botRNode.centerXProperty().unbind();
-				botRNode.centerYProperty().unbind();
-				botRNode.setCenterX(e.getX());
-				botRNode.setCenterY(e.getY());
+			public void handle(MouseEvent key) {
+				if (key.getX() > resizeHB.getCenterX())
+					setWidth(getWidth() + 2);
+				if (key.getX() < resizeHB.getCenterX())
+					setWidth(getWidth() - 2);
+			}
+		});
+
+		resizeVB = new CNode();
+		resizeVB.centerXProperty().bind(xProperty().add(20));
+		resizeVB.centerYProperty().bind(yProperty().add(heightProperty()));
+
+		resizeVB.addEventFilter(MouseEvent.MOUSE_DRAGGED, new EventHandler<MouseEvent>() {
+			@Override
+			public void handle(MouseEvent key) {
+				if (key.getY() > resizeVB.getCenterY())
+					setHeight(getHeight() + 2);
+				if (key.getY() < resizeVB.getCenterY())
+					setHeight(getHeight() - 2);
 			}
 		});
 
@@ -104,6 +126,24 @@ public class UCBoundary extends Rectangle {
 				setEffect(null);
 			}
 		});
+
+		owner.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
+			@Override
+			public void handle(KeyEvent key) {
+				if (isHover()) {
+					if (copyKey.match(key)) {
+						try {
+							if (copy == null)
+								copy = new CopyXML();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						copy.copyUCBoundary(getX(), getY(), getWidth(), getHeight(), data.get(), getFill().toString());
+					}
+				}
+			}
+		});
+
 	}
 
 	public final StringProperty labelProperty() {
